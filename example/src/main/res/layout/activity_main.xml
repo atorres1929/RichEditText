@@ -1,0 +1,131 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <HorizontalScrollView
+        android:id="@+id/horizontalScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/horizontal_scroll_button_size"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_button_bordered"
+                android:fontFamily="serif"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:textSize="24sp" />
+
+            <Button
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_button_bordered"
+                android:fontFamily="serif"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:textSize="24sp" />
+
+            <ToggleButton
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_togglebutton_bordered"
+                android:fontFamily="serif"
+                android:textColor="@android:color/white"
+                android:textOff="@string/button_bold"
+                android:textOn="@string/button_bold"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <ToggleButton
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_togglebutton_bordered"
+                android:fontFamily="serif"
+                android:textColor="@android:color/white"
+                android:textOff="@string/button_italic"
+                android:textOn="@string/button_italic"
+                android:textSize="24sp"
+                android:textStyle="italic" />
+
+            <ToggleButton
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_togglebutton_bordered"
+                android:fontFamily="serif"
+                android:textColor="@android:color/white"
+                android:textOff="@string/button_underline"
+                android:textOn="@string/button_underline"
+                android:textSize="24sp" />
+
+            <ImageButton
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_button_bordered"
+                android:src="@mipmap/ic_unindent" />
+
+            <ImageButton
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_button_bordered"
+                android:src="@mipmap/ic_indent" />
+
+            <ImageButton
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_button_bordered"
+                android:src="@mipmap/ic_textcolor" />
+
+            <ImageButton
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_button_bordered"
+                android:src="@mipmap/ic_highlighter" />
+
+            <ToggleButton
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_togglebutton_bordered"
+                android:fontFamily="serif"
+                android:textColor="@android:color/white"
+                android:textOff="@string/button_strikethrough"
+                android:textOn="@string/button_strikethrough"
+                android:textSize="24sp" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="267dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/horizontalScrollView">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:scrollbarAlwaysDrawHorizontalTrack="false"
+            android:scrollbarAlwaysDrawVerticalTrack="true">
+
+            <com.artifexiumgames.richedittext.RichEditText
+                android:id="@+id/editor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:fontFamily="sans-serif"
+                android:gravity="top|start"
+                android:inputType="textCapSentences|textAutoCorrect|textAutoComplete|textMultiLine"
+                android:text="@string/large_text"
+                android:textSize="20sp" />
+        </ScrollView>
+    </android.support.v4.widget.NestedScrollView>
+
+</RelativeLayout>

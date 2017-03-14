@@ -1,0 +1,7 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <!-- Default screen margins, per the Android Design guidelines. -->
+
+    <!--Journal Dimensions-->
+    <dimen name="horizontal_scroll_button_size">50dp</dimen>
+</resources>
