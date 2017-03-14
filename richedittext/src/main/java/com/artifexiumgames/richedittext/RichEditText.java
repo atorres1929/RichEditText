@@ -48,7 +48,7 @@ import java.util.List;
 import static android.R.id.text1;
 
 
-/*  
+/*
     Copyright 2017 Adam Torres
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -272,12 +272,13 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                 } else if (span instanceof BackgroundColorSpan) {
                     setCurrentTextHighlightColor(new ColorDrawable(((BackgroundColorSpan) span).getBackgroundColor()));
                 } else {
-                    throw new UnknownParcelableSpanException("Unknown ParcelableSpan when updating text styles on selection change");
+                    throw new UnknownParcelableSpanException();
                 }
 
             }
         } catch (UnknownParcelableSpanException e){
-            Log.e(TAG, "Was a new span type introduced and not accounted for?", e);
+            Log.e(TAG, "Unknown ParcelableSpan when updating text styles on selection change." +
+                    "\nWas a new span type introduced and not accounted for?", e);
         }
 
         if (boldButton != null) {
@@ -444,7 +445,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
             } else if (id == highlightColorButton.getId()) {
                 highlightColorAction();
             } else {
-                Log.e(TAG, "Button pressed did not match any known Ids"); //TODO throw an error?
+                throw new UnknownButtonReferenceException("Check to make sure all buttons have properly set listeners");
             }
         } catch (Exception e) {
             Log.e(TAG, "Error updating text styles", e);
@@ -504,7 +505,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
             }
         }
         else if (!button.isChecked()) {
-            removeSpansWithinSelection(c);
+            removeTextStylesWithinSelection(c);
         }
     }
 
@@ -517,7 +518,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
      *
      * @see #updateTextStylesOnButtonPress(ToggleButton, Class)
      */
-    protected void removeSpansWithinSelection(Class c) {
+    protected void removeTextStylesWithinSelection(Class c) {
         int start = getSelectionStart();
         int end = getSelectionEnd();
         if (start != end){
@@ -563,7 +564,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         try {
             updateTextStylesOnButtonPress(boldButton, RichEditBoldSpan.class);
         } catch (Exception e) {
-            Log.e(TAG, "Error while performing boldAction");
+            Log.e(TAG, "Error while performing boldAction", e);
         }
     }
 
@@ -583,7 +584,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         try {
             updateTextStylesOnButtonPress(italicButton, RichEditItalicSpan.class);
         } catch (Exception e) {
-            Log.e(TAG, "Error while performing italicAction");
+            Log.e(TAG, "Error while performing italicAction", e);
         }
     }
 
@@ -603,7 +604,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         try {
             updateTextStylesOnButtonPress(underlineButton, RichEditUnderlineSpan.class);
         } catch (Exception e) {
-            Log.e(TAG, "Error while performing underlineAction");
+            Log.e(TAG, "Error while performing underlineAction", e);
         }
     }
 
@@ -623,7 +624,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         try {
             updateTextStylesOnButtonPress(strikeThroughButton, StrikethroughSpan.class);
         } catch (Exception e) {
-            Log.e(TAG, "Error while performing strikethroughAction");
+            Log.e(TAG, "Error while performing strikethroughAction", e);
         }
     }
     /**
@@ -926,7 +927,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     public void setCurrentTextColor(ColorDrawable color){
         this.currentTextColor = color;
         if (selectionStartBeforeFocusChange != selectionEndBeforeFocusChange){
-            removeSpansWithinSelection(ForegroundColorSpan.class);
+            removeTextStylesWithinSelection(ForegroundColorSpan.class); //TODO make special removal method for text color
             this.getText().setSpan(new ForegroundColorSpan(currentTextColor.getColor()), selectionStartBeforeFocusChange, selectionEndBeforeFocusChange, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
     }
@@ -941,7 +942,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         }
         this.currentTextHighlightColor = color;
         if (selectionStartBeforeFocusChange != selectionEndBeforeFocusChange){
-            removeSpansWithinSelection(BackgroundColorSpan.class);
+            removeTextStylesWithinSelection(BackgroundColorSpan.class); //TODO make special removal method for highlight color
             this.getText().setSpan(new BackgroundColorSpan(currentTextHighlightColor.getColor()), selectionStartBeforeFocusChange, selectionEndBeforeFocusChange, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
     }
@@ -1021,7 +1022,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     }
 
     /**
-     * Used to compare span types in {@link #removeSpansWithinSelection(Class)} instead of having
+     * Used to compare span types in {@link #removeTextStylesWithinSelection(Class)} instead of having
      * to deal with special cases where some spans are carrying an integer.
      * This makes things much simpler.
      */
@@ -1038,7 +1039,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     }
 
     /**
-     * Used to compare span types in {@link #removeSpansWithinSelection(Class)} (Constructor)} instead of having
+     * Used to compare span types in {@link #removeTextStylesWithinSelection(Class)} (Constructor)} instead of having
      * to deal with special cases where some spans are carrying an integer.
      * This makes things much simpler.
      */
@@ -1114,10 +1115,27 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
 
     public class UnknownParcelableSpanException extends Exception{
 
-        public UnknownParcelableSpanException(String s){
-            super(s);
+        public UnknownParcelableSpanException(){
+            super();
+        }
+
+        public UnknownParcelableSpanException(String message){
+            super(message);
         }
 
     }
+
+    public class UnknownButtonReferenceException extends Exception{
+
+        public UnknownButtonReferenceException(){
+            super();
+        }
+
+        public UnknownButtonReferenceException(String message){
+            super(message);
+        }
+
+    }
+
 
 }
