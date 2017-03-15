@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Day Mode Colors -->
+
+    <color name="colorPrimary">#c1c2c3</color>
+    <color name="colorPrimaryDark">#252829</color>
+    <color name="textColorPrimary">#000000</color>
+    <color name="textColorSecondary">#212121</color>
+
+</resources>

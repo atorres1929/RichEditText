@@ -1,6 +1,0 @@
-Highlight:
-https://www.iconfinder.com/icons/1021024/marker_icon#size=128
-Subscript:
-https://www.iconfinder.com/icons/1608858/subscript_icon#size=128
-Superscript:
-https://www.iconfinder.com/icons/1608861/superscript_icon#size=128

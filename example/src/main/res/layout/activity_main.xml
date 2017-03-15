@@ -1,13 +1,33 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="@style/AppTheme.AppBarOverlay"
+        app:popupTheme="@style/AppTheme.PopupOverlay"
+        app:subtitle="Apache License 2.0"
+        app:subtitleTextColor="@color/textColorPrimary"
+        app:title="RichEditText"
+        app:titleTextColor="@color/textColorSecondary" />
 
     <HorizontalScrollView
         android:id="@+id/horizontalScrollView"
         android:layout_width="match_parent"
         android:layout_height="@dimen/horizontal_scroll_button_size"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true">
+        android:layout_below="@+id/toolbar"
+        android:elevation="4dp">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -34,7 +54,6 @@
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_togglebutton_bordered"
                 android:fontFamily="serif"
-                android:textColor="@android:color/white"
                 android:textOff="@string/button_bold"
                 android:textOn="@string/button_bold"
                 android:textSize="30sp"
@@ -46,7 +65,6 @@
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_togglebutton_bordered"
                 android:fontFamily="serif"
-                android:textColor="@android:color/white"
                 android:textOff="@string/button_italic"
                 android:textOn="@string/button_italic"
                 android:textSize="30sp"
@@ -58,9 +76,18 @@
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_togglebutton_bordered"
                 android:fontFamily="serif"
-                android:textColor="@android:color/white"
                 android:textOff="@string/button_underline"
                 android:textOn="@string/button_underline"
+                android:textSize="30sp" />
+
+            <ToggleButton
+                android:id="@+id/strikethrough"
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_togglebutton_bordered"
+                android:fontFamily="serif"
+                android:textOff="@string/button_strikethrough"
+                android:textOn="@string/button_strikethrough"
                 android:textSize="30sp" />
 
             <ImageButton
@@ -82,27 +109,14 @@
                 android:layout_width="@dimen/horizontal_scroll_button_size"
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_button_bordered"
-                android:src="?attr/subscript_icon"
-                 />
+                android:src="?attr/subscript_icon" />
 
             <ImageButton
                 android:id="@+id/superscript"
                 android:layout_width="@dimen/horizontal_scroll_button_size"
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_button_bordered"
-                android:src="?attr/superscript_icon"
-                 />
-
-            <ToggleButton
-                android:id="@+id/strikethrough"
-                android:layout_width="@dimen/horizontal_scroll_button_size"
-                android:layout_height="@dimen/horizontal_scroll_button_size"
-                android:background="@drawable/custom_togglebutton_bordered"
-                android:fontFamily="serif"
-                android:textColor="@android:color/white"
-                android:textOff="@string/button_strikethrough"
-                android:textOn="@string/button_strikethrough"
-                android:textSize="30sp" />
+                android:src="?attr/superscript_icon" />
 
         </LinearLayout>
     </HorizontalScrollView>

@@ -1,30 +1,18 @@
 <resources>
 
     <!-- Light application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light">
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:textColor">@color/textColorLightTheme</item>
-        <item name="indent_icon">@mipmap/ic_indent_light</item>
-        <item name="unindent_icon">@mipmap/ic_unindent_light</item>
-        <item name="subscript_icon">@mipmap/ic_subscript_light</item>
-        <item name="superscript_icon">@mipmap/ic_superscript_light</item>
-        <item name="textcolor_icon">@mipmap/ic_textcolor_light</item>
-        <item name="highlight_icon">@mipmap/ic_highlight_light</item>
-    </style>
-
-    <style name="AppTheme.Dark" parent="Theme.AppCompat">
-        <item name="colorPrimary">@color/colorPrimaryInverse</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryInverse</item>
-        <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:textColor">@color/textColorDarkTheme</item>
-        <item name="indent_icon">@mipmap/ic_indent_dark</item>
-        <item name="unindent_icon">@mipmap/ic_unindent_dark</item>
-        <item name="subscript_icon">@mipmap/ic_subscript_dark</item>
-        <item name="superscript_icon">@mipmap/ic_superscript_dark</item>
-        <item name="textcolor_icon">@mipmap/ic_textcolor_dark</item>
-        <item name="highlight_icon">@mipmap/ic_highlight_dark</item>
+        <item name="indent_icon">@drawable/ic_indent</item>
+        <item name="unindent_icon">@drawable/ic_unindent</item>
+        <item name="subscript_icon">@drawable/ic_subscript</item>
+        <item name="superscript_icon">@drawable/ic_superscript</item>
+        <item name="textcolor_icon">@drawable/ic_text_color</item>
+        <item name="highlight_icon">@drawable/ic_highlight</item>
+        <item name="android:textColorPrimary">@color/textColorPrimary</item>
+        <item name="android:textColorSecondary">@color/textColorSecondary</item>
     </style>
 
     <!-- Attributes -->
@@ -34,5 +22,9 @@
     <attr name="superscript_icon" format="reference"/>
     <attr name="highlight_icon" format="reference"/>
     <attr name="textcolor_icon" format="reference"/>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Dark" />
     
 </resources>

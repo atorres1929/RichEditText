@@ -1,18 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Light Theme Colors -->
-    <color name="colorPrimary">#ffffff</color>
-    <color name="colorPrimaryDark">#c1c2c3</color>
-    <color name="textColorLightTheme">#000000</color>
-
-
-    <!-- Dark Theme Colors -->
-    <color name="colorPrimaryInverse">#191919</color>
-    <color name="colorPrimaryDarkInverse">#000000</color>
-    <color name="textColorDarkTheme">#c1c2c3</color>
-
     <!-- Universal Colors -->
+
     <color name="colorAccent">#2c0cac</color>
     <color name="colorButton">#746f6f</color>
+
 </resources>
