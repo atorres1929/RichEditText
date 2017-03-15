@@ -7,6 +7,8 @@
     <color name="colorPrimaryDark">#000000</color>
     <color name="textColorPrimary">#c1c2c3</color>
     <color name="textColorSecondary">#ffffff</color>
+    <color name="colorRichEditToolBar">#c1c2c3</color>
+    <color name="textColorBackground">#191919</color>
 
 
 </resources>

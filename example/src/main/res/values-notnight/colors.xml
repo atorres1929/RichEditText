@@ -7,5 +7,7 @@
     <color name="colorPrimaryDark">#252829</color>
     <color name="textColorPrimary">#000000</color>
     <color name="textColorSecondary">#212121</color>
+    <color name="colorRichEditToolBar">#000000</color>
+    <color name="textColorBackground">#ffffff</color>
 
 </resources>

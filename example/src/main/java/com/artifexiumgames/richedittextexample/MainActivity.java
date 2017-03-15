@@ -4,6 +4,10 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.ImageButton;
 import android.widget.ToggleButton;
 
@@ -17,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        getDelegate().setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         editor = (RichEditText) findViewById(R.id.editor);
 
         ToggleButton boldButton = (ToggleButton) findViewById(R.id.bold);
@@ -35,7 +39,34 @@ public class MainActivity extends AppCompatActivity {
 
         ImageButton subscriptButton = (ImageButton) findViewById(R.id.subscript);
         ImageButton superscriptButton = (ImageButton) findViewById(R.id.superscript);
-
         editor.setAllButtons(boldButton, italicButton, underlineButton, strikethroughButton, subscriptButton, superscriptButton, unindentButton, indentButton, textColorButton, textHighlightButton);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_dayMode:
+                getDelegate().setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                finish();
+                startActivity(getIntent());
+                return true;
+            case R.id.action_nightMode:
+                getDelegate().setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                finish();
+                startActivity(getIntent());
+                return true;
+            case R.id.action_github:
+                //TODO link to github
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
     }
 }
