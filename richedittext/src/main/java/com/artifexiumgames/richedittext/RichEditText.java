@@ -662,7 +662,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         changingTextColor = true;
         mainColorChooserDialog.setTitle("Text Color");
         mainColorChooserDialog.show();
-        //application of style handled in setCurrentTextColor(ColorDrawable color)
+        //application of style handled in setCurrentTextColor(ColorDrawable color), necessary as show() only shows the dialog, it doesn't account for the choosing of the color
     }
 
     //TODO document
@@ -672,7 +672,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         changingTextColor = false;
         mainColorChooserDialog.setTitle("Highlight Color");
         mainColorChooserDialog.show();
-        //application of style handled in setCurrentHighlightColor(ColorDrawable color)
+        //application of style handled in setCurrentHighlightColor(ColorDrawable color), necessary as show() only shows the dialog, it doesn't account for the choosing of the color
     }
 
     /**

@@ -19,14 +19,14 @@
                 android:layout_width="@dimen/horizontal_scroll_button_size"
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_button_bordered"
-                android:src="@mipmap/ic_unindent" />
+                android:src="?attr/unindent_icon" />
 
             <ImageButton
                 android:id="@+id/indent"
                 android:layout_width="@dimen/horizontal_scroll_button_size"
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_button_bordered"
-                android:src="@mipmap/ic_indent" />
+                android:src="?attr/indent_icon" />
 
             <ToggleButton
                 android:id="@+id/bold"
@@ -68,21 +68,21 @@
                 android:layout_width="@dimen/horizontal_scroll_button_size"
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_button_bordered"
-                android:src="@mipmap/ic_textcolor" />
+                android:src="?attr/textcolor_icon" />
 
             <ImageButton
                 android:id="@+id/highlighter"
                 android:layout_width="@dimen/horizontal_scroll_button_size"
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_button_bordered"
-                android:src="@mipmap/ic_highlighter" />
+                android:src="?attr/highlight_icon" />
 
             <ImageButton
                 android:id="@+id/subscript"
                 android:layout_width="@dimen/horizontal_scroll_button_size"
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_button_bordered"
-                android:src="@mipmap/ic_subscript"
+                android:src="?attr/subscript_icon"
                  />
 
             <ImageButton
@@ -90,7 +90,7 @@
                 android:layout_width="@dimen/horizontal_scroll_button_size"
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_button_bordered"
-                android:src="@mipmap/ic_superscript"
+                android:src="?attr/superscript_icon"
                  />
 
             <ToggleButton
