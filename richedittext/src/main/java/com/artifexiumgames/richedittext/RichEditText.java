@@ -147,57 +147,18 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
      */
     public RichEditText(Context context) {
         super(context);
-        init();
     }
     /**
      * Default Constructor needed to extend {@link EditText}
      */
     public RichEditText(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
     }
     /**
      * Default Constructor needed to extend {@link EditText}
      */
     public RichEditText(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
-    }
-
-    /**
-     * Adds this class as it's own text listener and initializes the default settings
-     * for:
-     * <ul>
-     *     <li>Relative Size (subscript/superscript)</li>
-     *     <li>Number of Spaces in a tab</li>
-     *     <li>The colors you can choose from in the text color or highlight color dialog</li>
-     * </ul>
-     */
-    protected void init() {
-        addTextChangedListener(this);
-        setRelativeSize(0.5f);
-        setNumTabs(4);
-        setHighlightAlpha(168);
-        colorList = new ArrayList<>();
-        try {
-            colorList.add(new ColorString("Black", "#000000"));
-            colorList.add(new ColorString("White", "#FFFFFF"));
-            colorList.add(new ColorString("Green", "#008000"));
-            colorList.add(new ColorString("Blue", "#0000FF"));
-            colorList.add(new ColorString("Purple", "#800080"));
-            colorList.add(new ColorString("Red", "#FF0000"));
-            colorList.add(new ColorString("Orange", "#FFA500"));
-            colorList.add(new ColorString("Yellow", "#FFFF00"));
-            colorList.add(new ColorString("Hot Pink", "#FF69B4"));
-            colorList.add(new ColorString("Light Blue", "#00FFF9"));
-            colorList.add(new ColorString("Brown", "#A52A2A"));
-        } catch (IOException ex){
-            Log.wtf(TAG, "Default Settings for ColorString incorrect");
-        }
-        setCurrentTextColor(new ColorDrawable(Color.BLACK));
-        setCurrentTextHighlightColor(new ColorDrawable(Color.WHITE));
-        createMainColorChooserDialog();
-        createCustomColorChooserDialog();
     }
 
     /**
@@ -209,19 +170,26 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
      *                                of the text editor as a whole. For that, see {@link #setBackgroundColor(int)}
      * @param colors The colors that will show in the dialog to choose colors
      * @param numTabs The number of spaces in a tab
-     * @param relativeSize The relative size of subscript and superscript text
+     * @param relativeSize The relative size of subscript and superscript text. Should be a float value from 0 to 1
+     * @param highlightAlpha A value from 0 to 255. 0 being complete transparent, and 255 being completely opaque. It is recommended to have at least some transparency
+     *                       because when selecting the text (to copy, cut, etc.), unless there is highlightAlpha, it is unclear what parts of the
+     *                       text are selected.
      */
-    protected void setSettings(int startingTextColor, int startingHighlightColor, ArrayList<ColorString> colors, int numTabs, int relativeSize, int highlightAlpha){
+    public void setSettings(int startingTextColor, int startingHighlightColor, ArrayList<ColorString> colors, int numTabs, float relativeSize, int highlightAlpha){
         addTextChangedListener(this);
         setCurrentTextColor(new ColorDrawable(startingTextColor));
         setCurrentTextHighlightColor(new ColorDrawable(startingHighlightColor));
         setColorList(colors);
+        colorList.add(0, new ColorString("Default Highlight", startingHighlightColor));
+        colorList.add(0, new ColorString("Default Text Color", startingTextColor));
         setNumTabs(numTabs);
         setRelativeSize(relativeSize);
         setHighlightAlpha(highlightAlpha);
         //TODO set line spacing
         //TODO set font size
         //TODO set font family
+        createMainColorChooserDialog();
+        createCustomColorChooserDialog();
     }
 
     @Override
@@ -315,7 +283,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     public void onTextChanged(CharSequence s, int start, int before, int count) {
         SpannableStringBuilder text = (SpannableStringBuilder) s;
         StyleSpan[] spans = text.getSpans(0, s.length(), StyleSpan.class);
-        for (StyleSpan span: spans){
+        for (StyleSpan span: spans){ //TODO rework all of this
             getText().removeSpan(span);
         }
         if (boldButton != null && boldButton.isChecked()) {
@@ -372,10 +340,10 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                     ColorString color = colorList.remove(which);
                     colorList.add(0, color);
                     if (changingTextColor){
-                        setCurrentTextColor(new ColorDrawable(color.getHex()));
+                        setCurrentTextColor(new ColorDrawable(color.getColorCode()));
                     }
                     else{
-                        setCurrentTextHighlightColor(new ColorDrawable(color.getHex()));
+                        setCurrentTextHighlightColor(new ColorDrawable(color.getColorCode()));
                     }
                     dialog.dismiss();
                     break;
@@ -394,10 +362,10 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                             colorList.add(0, newColor);
                         }
                         if (changingTextColor){
-                            setCurrentTextColor(new ColorDrawable(newColor.getHex()));
+                            setCurrentTextColor(new ColorDrawable(newColor.getColorCode()));
                         }
                         else{
-                            setCurrentTextHighlightColor(new ColorDrawable(newColor.getHex()));
+                            setCurrentTextHighlightColor(new ColorDrawable(newColor.getColorCode()));
                         }
                         dialog.dismiss();
                     } catch (IOException e) {
@@ -762,7 +730,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                 View view = super.getView(position, convertView, parent);
                 TextView tv = (TextView) view.findViewById(text1);
 
-                int color = this.getItem(position).getHex();
+                int color = this.getItem(position).getColorCode();
                 tv.setBackgroundColor(color);
 
                 //Convert the color to RGB to decide whether white or black contrasts better with the color
@@ -1059,7 +1027,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
      * A simple class that holds the information for the name of a color and it's hex code.
      * Will throw an {@link IOException} if information is put in incorrectly
      */
-    protected class ColorString {
+    public static class ColorString {
 
         private int hex;
         private String colorString;
@@ -1091,11 +1059,38 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
             }catch (NumberFormatException ex){
                 throw new IOException("The string " +color+ " is not a properly formatted hex code");
             }
-            title = title.trim();
-            colorString = title + " - " + color;
+            colorString = title.trim() + " - " + color;
         }
 
-        public int getHex() {
+        /**
+         * Create a color to be displayed in the Color Chooser dialog.
+         * <p>
+         *     <b>For Example:</b>
+         *     <br>
+         *         new ColorString("Favorite Color", Color.RED)
+         * </p>
+         * <p>
+         *     <b>Result in Dialog</b>
+         *     <br>
+         *         "Favorite Color - FF0000
+         * </p>
+         * @param title what the color will be called in the Color Chooser dialog menu. Keep in mind
+         *              there is a limited amount of space in the dialog menu.
+         * @param color The color code that will be displayed
+         */
+        public ColorString(String title, int color) {
+            hex = color | 0xFF000000; //Convert the color to AARRGGBB fully opaque
+            String s = Integer.toHexString(color);
+            int diff = 6 - s.length();
+            if (diff != 0) {
+                for (int i = 0; i < diff; i++) {
+                    s = "0" + s;
+                }
+            }
+            colorString = title.trim() + " - " + "#" + s; //Takes away the alpha hex, makes it RGB instead of ARGB
+        }
+
+        public int getColorCode() {
             return hex;
         }
 
@@ -1109,7 +1104,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
 
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof ColorString && ((ColorString) obj).getHex() == this.getHex();
+            return obj instanceof ColorString && ((ColorString) obj).getColorCode() == this.getColorCode();
         }
     }
 

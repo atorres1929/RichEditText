@@ -2,8 +2,6 @@
 <resources>
 
     <!-- Universal Colors -->
-
-    <color name="colorAccent">#2c0cac</color>
     <color name="colorButton">#746f6f</color>
 
 </resources>

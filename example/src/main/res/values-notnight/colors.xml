@@ -9,5 +9,6 @@
     <color name="textColorSecondary">#212121</color>
     <color name="colorRichEditToolBar">#000000</color>
     <color name="textColorBackground">#ffffff</color>
+    <color name="colorAccent">#2c0cac</color>
 
 </resources>
