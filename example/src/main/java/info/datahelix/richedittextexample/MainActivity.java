@@ -3,22 +3,21 @@ package com.artifexiumgames.richedittextexample;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ImageButton;
 import android.widget.ToggleButton;
 
-import com.artifexiumgames.richedittext.RichEditText;
+import info.datahelix.richedittext.RichEditText;
 
-import java.io.IOException;
 import java.util.ArrayList;
+
+import info.datahelix.richedittextexample.R;
 
 public class MainActivity extends AppCompatActivity {
 
