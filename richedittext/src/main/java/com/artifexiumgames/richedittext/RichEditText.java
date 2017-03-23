@@ -239,7 +239,8 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                     setCurrentTextColor(new ColorDrawable(((ForegroundColorSpan) span).getForegroundColor()));
                 } else if (span instanceof BackgroundColorSpan) {
                     setCurrentTextHighlightColor(new ColorDrawable(((BackgroundColorSpan) span).getBackgroundColor()));
-                } else {
+                }
+                else if ( !(span instanceof UnderlineSpan) ){ //Auto correct underlines text as you type, need to ignore Autocorrect's Underline spans
                     throw new UnknownParcelableSpanException();
                 }
 
@@ -282,10 +283,10 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
         SpannableStringBuilder text = (SpannableStringBuilder) s;
-        StyleSpan[] spans = text.getSpans(0, s.length(), StyleSpan.class);
-        for (StyleSpan span: spans){ //TODO rework all of this
-            getText().removeSpan(span);
-        }
+//        StyleSpan[] spans = text.getSpans(0, s.length(), StyleSpan.class);
+//        for (StyleSpan span: spans){ //TODO rework all of this
+//            getText().removeSpan(span);
+//        }
         if (boldButton != null && boldButton.isChecked()) {
             getText().setSpan(new RichEditBoldSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
@@ -415,12 +416,16 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
             } else {
                 throw new UnknownButtonReferenceException("Check to make sure all buttons have properly set listeners");
             }
-        } catch (Exception e) {
+        } catch (IndexOutOfBoundsException e) {
             Log.e(TAG, "Error updating text styles", e);
+        } catch (UnknownButtonReferenceException e) {
+            Log.e(TAG, "", e);
+        } catch (Exception e) {
+            Log.e(TAG, "Error with class reflection in #updateTextStylesOnButtonPress", e);
         }
     }
 
-    protected void updateTextStylesOnButtonPress(ToggleButton button, Class c) throws Exception {
+    protected void updateTextStylesOnButtonPress(ToggleButton button, Class c) throws IndexOutOfBoundsException, IllegalAccessException, InstantiationException {
         int selStart = this.getSelectionStart();
         int selEnd = this.getSelectionEnd();
         Editable text = getText();
@@ -429,12 +434,12 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                 String[] words = text.subSequence(selStart, selEnd).toString().split(" ");
                 int i = 0;
                 for (String word : words) {
-                        text.setSpan(c.newInstance(), selStart + i, selStart + i + word.length() + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    text.setSpan(c.newInstance(), selStart + i, selStart + i + word.length() + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                     i += word.length() + 1;
                 }
             }
 
-            //Find word at cursor and set bold style
+            //Look for the beginning and end of a word
             else {
                 boolean startFound = false;
                 boolean endFound = false;
@@ -442,22 +447,30 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                 int wordEnd = -1;
                 int i = 0;
                 try {
+                    //If the selection is at the new line character, then there is no start or end to the word, so apply style there.
+                    if (text.charAt(selStart) == '\n') {
+                        wordStart = selStart;
+                        startFound = true;
+                    }
                     while (!startFound) {
+                        //Look for the first space character before the word to find where the word starts
                         if (text.charAt(selStart - i) != ' ') {
                             i += 1;
-                        } else {
+                        }
+                        else {
                             wordStart = selStart - i;
                             startFound = true;
                         }
                     }
                 } catch (IndexOutOfBoundsException e) {
-                    Log.d(TAG, "word search reached zero while updating text style");
-                    wordStart = -1; //-1 because algorithm adds 1 at end to compensate for spaces
+                    Log.d(TAG, "#updateTextStylesOnButtonPress word search reached zero while updating text style");
+                    wordStart = -1; // -1 because this algorithm adds 1 at end to compensate for spaces, -1+1 = 0
                 }
 
                 try {
                     i = 0;
                     while (!endFound) {
+                        //Look for the first space character after the word to find where the word ends
                         if (text.charAt(selStart + i) != ' ') {
                             i += 1;
                         } else {
@@ -466,10 +479,11 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                         }
                     }
                 } catch (IndexOutOfBoundsException e){
-                    Log.d(TAG, "word search reached end of text while updating text style");
+                    Log.d(TAG, "#updateTextStylesOnButtonPress word search reached end of text while updating text style");
                     wordEnd = getText().length();
                 }
-                    text.setSpan(c.newInstance(), wordStart+1, wordEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                text.setSpan(c.newInstance(), wordStart+1, wordEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }
         else if (!button.isChecked()) {
