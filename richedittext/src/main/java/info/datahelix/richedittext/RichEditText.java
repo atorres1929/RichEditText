@@ -281,16 +281,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
      */
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
-//        SpannableStringBuilder text = (SpannableStringBuilder) s;
-//        StyleSpan[] spans = text.getSpans(0, s.length(), StyleSpan.class);
-//        for (StyleSpan span: spans){ //TODO rework all of this
-//            getText().removeSpan(span);
-//        }
-
-        //If the delete button was pressed, there's no need to apply any styles
-        if (getText().length() > s.length()){
-            return;
-        }
+        //TODO rework all of this
 
         if (boldButton != null && boldButton.isChecked()) {
             getText().setSpan(new RichEditBoldSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
