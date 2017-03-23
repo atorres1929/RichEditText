@@ -1,4 +1,4 @@
-package com.artifexiumgames.richedittext;
+package info.datahelix.richedittext;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;

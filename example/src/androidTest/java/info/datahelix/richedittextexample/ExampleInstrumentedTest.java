@@ -1,4 +1,4 @@
-package com.artifexiumgames.richedittextexample;
+package info.datahelix.richedittextexample;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.artifexiumgames.richedittextexample", appContext.getPackageName());
+        assertEquals("info.datahelix.richedittextexample", appContext.getPackageName());
     }
 }

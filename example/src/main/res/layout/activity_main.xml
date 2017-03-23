@@ -136,7 +136,7 @@
             android:scrollbarAlwaysDrawHorizontalTrack="false"
             android:scrollbarAlwaysDrawVerticalTrack="true">
 
-            <com.artifexiumgames.richedittext.RichEditText
+            <info.datahelix.richedittext.RichEditText
                 android:id="@+id/editor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

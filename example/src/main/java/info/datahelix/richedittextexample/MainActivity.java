@@ -1,4 +1,4 @@
-package com.artifexiumgames.richedittextexample;
+package info.datahelix.richedittextexample;
 
 import android.content.Intent;
 import android.graphics.Paint;
@@ -16,8 +16,6 @@ import android.widget.ToggleButton;
 import info.datahelix.richedittext.RichEditText;
 
 import java.util.ArrayList;
-
-import info.datahelix.richedittextexample.R;
 
 public class MainActivity extends AppCompatActivity {
 

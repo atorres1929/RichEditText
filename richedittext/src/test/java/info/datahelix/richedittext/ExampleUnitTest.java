@@ -1,4 +1,4 @@
-package com.artifexiumgames.richedittext;
+package info.datahelix.richedittext;
 
 import org.junit.Test;
 
