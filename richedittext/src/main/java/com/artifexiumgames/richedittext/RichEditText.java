@@ -15,7 +15,6 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.ParcelableSpan;
 import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextWatcher;
 import android.text.style.BackgroundColorSpan;
@@ -282,11 +281,17 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
      */
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
-        SpannableStringBuilder text = (SpannableStringBuilder) s;
+//        SpannableStringBuilder text = (SpannableStringBuilder) s;
 //        StyleSpan[] spans = text.getSpans(0, s.length(), StyleSpan.class);
 //        for (StyleSpan span: spans){ //TODO rework all of this
 //            getText().removeSpan(span);
 //        }
+
+        //If the delete button was pressed, there's no need to apply any styles
+        if (getText().length() > s.length()){
+            return;
+        }
+
         if (boldButton != null && boldButton.isChecked()) {
             getText().setSpan(new RichEditBoldSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
@@ -416,16 +421,14 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
             } else {
                 throw new UnknownButtonReferenceException("Check to make sure all buttons have properly set listeners");
             }
-        } catch (IndexOutOfBoundsException e) {
-            Log.e(TAG, "Error updating text styles", e);
         } catch (UnknownButtonReferenceException e) {
             Log.e(TAG, "", e);
-        } catch (Exception e) {
+        } catch (IllegalAccessException | InstantiationException e) {
             Log.e(TAG, "Error with class reflection in #updateTextStylesOnButtonPress", e);
         }
     }
 
-    protected void updateTextStylesOnButtonPress(ToggleButton button, Class c) throws IndexOutOfBoundsException, IllegalAccessException, InstantiationException {
+    protected void updateTextStylesOnButtonPress(ToggleButton button, Class c) throws IllegalAccessException, InstantiationException {
         int selStart = this.getSelectionStart();
         int selEnd = this.getSelectionEnd();
         Editable text = getText();
@@ -520,9 +523,9 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                         Object previous = spanList.get(index - 1); //Gets previous span
                         int previousStart = getText().getSpanStart(previous); //previous span start
                         int previousEnd = getText().getSpanEnd(previous);       //previous span end
-                        if (getText().charAt(previousEnd - 1) == ' ')               //Check to see if the first character in the previous span is a space
+                        if (getText().charAt(previousEnd - 1) == ' ') {           //Check to see if the first character in the previous span is a space
                             getText().setSpan(previous, previousStart, previousEnd - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); //set span end to be 1 less
-
+                        }
                     }
                     this.getText().removeSpan(span);
                 }
