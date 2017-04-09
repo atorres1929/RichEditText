@@ -224,29 +224,20 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         boolean isSelectionItalic = false;
         boolean isSelectionUnderlined = false;
         boolean isSelectionStriked = false;
-        try {
-            for (ParcelableSpan span : getText().getSpans(selStart, selEnd, ParcelableSpan.class)) {
-                if (span instanceof RichEditBoldSpan) {
-                    isSelectionBold = true;
-                } else if (span instanceof RichEditItalicSpan) {
-                    isSelectionItalic = true;
-                } else if (span instanceof RichEditUnderlineSpan) {
-                    isSelectionUnderlined = true;
-                } else if (span instanceof StrikethroughSpan) {
-                    isSelectionStriked = true;
-                } else if (span instanceof ForegroundColorSpan) {
-                    setCurrentTextColor(new ColorDrawable(((ForegroundColorSpan) span).getForegroundColor()));
-                } else if (span instanceof BackgroundColorSpan) {
-                    setCurrentTextHighlightColor(new ColorDrawable(((BackgroundColorSpan) span).getBackgroundColor()));
-                }
-                else if ( !(span instanceof UnderlineSpan) ){ //Auto correct underlines text as you type, need to ignore Autocorrect's Underline spans
-                    throw new UnknownParcelableSpanException();
-                }
-
+        for (ParcelableSpan span : getText().getSpans(selStart, selEnd, ParcelableSpan.class)) {
+            if (span instanceof RichEditBoldSpan) {
+                isSelectionBold = true;
+            } else if (span instanceof RichEditItalicSpan) {
+                isSelectionItalic = true;
+            } else if (span instanceof RichEditUnderlineSpan) {
+                isSelectionUnderlined = true;
+            } else if (span instanceof StrikethroughSpan) {
+                isSelectionStriked = true;
+            } else if (span instanceof ForegroundColorSpan) {
+                setCurrentTextColor(new ColorDrawable(((ForegroundColorSpan) span).getForegroundColor()));
+            } else if (span instanceof BackgroundColorSpan) {
+                setCurrentTextHighlightColor(new ColorDrawable(((BackgroundColorSpan) span).getBackgroundColor()));
             }
-        } catch (UnknownParcelableSpanException e){
-            Log.e(TAG, "Unknown ParcelableSpan when updating text styles on selection change." +
-                    "\nWas a new span type introduced and not accounted for?", e);
         }
 
         if (boldButton != null) {
@@ -284,7 +275,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         //TODO rework all of this
 
         //If text being input is 0, then text is being delete. Therefore, no text styles need to be applied
-        if (count <= 0){
+        if (count <= 0 || start >= start + count){
             return;
         }
 
@@ -481,11 +472,14 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                     Log.d(TAG, "#updateTextStylesOnButtonPress word search reached end of text while updating text style");
                     wordEnd = getText().length();
                 }
-
-                text.setSpan(c.newInstance(), wordStart+1, wordEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                try {
+                    text.setSpan(c.newInstance(), wordStart + 1, wordEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                } catch (IndexOutOfBoundsException e) {
+                    Log.e(TAG, "Cannot make a span of negative size!", e);
+                }
             }
         }
-        else if (!button.isChecked()) {
+        else {
             removeTextStylesWithinSelection(c);
         }
     }
@@ -519,6 +513,9 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                         Object previous = spanList.get(index - 1); //Gets previous span
                         int previousStart = getText().getSpanStart(previous); //previous span start
                         int previousEnd = getText().getSpanEnd(previous);       //previous span end
+                        if (previousStart == -1 && previousEnd == -1) {
+                            return;
+                        }
                         if (getText().charAt(previousEnd - 1) == ' ') {           //Check to see if the first character in the previous span is a space
                             getText().setSpan(previous, previousStart, previousEnd - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); //set span end to be 1 less
                         }
@@ -1119,18 +1116,6 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         public boolean equals(Object obj) {
             return obj instanceof ColorString && ((ColorString) obj).getColorCode() == this.getColorCode();
         }
-    }
-
-    public class UnknownParcelableSpanException extends Exception{
-
-        public UnknownParcelableSpanException(){
-            super();
-        }
-
-        public UnknownParcelableSpanException(String message){
-            super(message);
-        }
-
     }
 
     public class UnknownButtonReferenceException extends Exception{
