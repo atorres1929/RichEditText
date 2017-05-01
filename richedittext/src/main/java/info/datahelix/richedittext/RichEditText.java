@@ -272,10 +272,9 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
      */
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
-        //TODO rework all of this
 
         //If text being input is 0, then text is being delete. Therefore, no text styles need to be applied
-        if (start >= start + count){
+        if (count == 0){
             return;
         }
 

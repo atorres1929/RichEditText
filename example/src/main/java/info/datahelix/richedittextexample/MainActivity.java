@@ -13,9 +13,9 @@ import android.view.MenuItem;
 import android.widget.ImageButton;
 import android.widget.ToggleButton;
 
-import info.datahelix.richedittext.RichEditText;
-
 import java.util.ArrayList;
+
+import info.datahelix.richedittext.RichEditText;
 
 public class MainActivity extends AppCompatActivity {
 
