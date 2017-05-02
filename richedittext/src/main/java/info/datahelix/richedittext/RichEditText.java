@@ -63,7 +63,10 @@ import static android.R.id.text1;
     limitations under the License.
  */
 
-
+//TODO Undo/Redo
+//TODO Insert Image
+//TODO Insert Link
+//TODO line spacing
 //TODO left, right, center align buttons
 //TODO search text function
 //TODO font family
