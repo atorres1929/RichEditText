@@ -317,8 +317,11 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         //Necessary to implement TextWatcher
     }
 
-    //TODO document
-    //if color already in list, color removed and added with new name
+    /**
+     * Handles the clicks for the MainColorChooser Dialog and the ColorChooser Dialogs.
+     * @param dialog Which dialog sent the click event
+     * @param which Which button was pressed
+     */
     @Override
     public void onClick(DialogInterface dialog, int which) {
 
@@ -342,6 +345,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
 
             }
         }
+        //if color already in list, color removed and added with new name
         else if (dialog.equals(customColorChooserDialog)){
             switch(which){
                 case Dialog.BUTTON_POSITIVE:
@@ -414,6 +418,16 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         }
     }
 
+    /**
+     * Updates the styles when a style button is pressed. If button that sent the action is pressed,
+     * then style is applied. Otherwise, if the button was not pressed, any style attributed to the
+     * button within the selection is removed. E.g. Bold button pressed -> Apply/Remove Bold from
+     * selection
+     * @param button The button that sent the action
+     * @param c The style class associated with that button
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     */
     protected void updateTextStylesOnButtonPress(ToggleButton button, Class c) throws IllegalAccessException, InstantiationException {
         int selStart = this.getSelectionStart();
         int selEnd = this.getSelectionEnd();
@@ -628,7 +642,9 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         relativeSizeFormat(new SuperscriptSpan());
     }
 
-    //TODO document
+    /**
+     * Simulates pressing the Text Color button
+     */
     public void textColorAction(){
         selectionStartBeforeFocusChange = getSelectionStart();
         selectionEndBeforeFocusChange = getSelectionEnd();
@@ -638,7 +654,9 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         //application of style handled in setCurrentTextColor(ColorDrawable color), necessary as show() only shows the dialog, it doesn't account for the choosing of the color
     }
 
-    //TODO document
+    /**
+     * Simulates pressing the Highlight button
+     */
     public void highlightColorAction(){
         selectionStartBeforeFocusChange = getSelectionStart();
         selectionEndBeforeFocusChange = getSelectionEnd();
@@ -727,7 +745,10 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         dialog.show();
     }
 
-    //TODO document
+    /**
+     * Creates the Main Color Chooser Dialog. This dialog allows the user to choose a color that already
+     * exists within the list and stylize their text
+     */
     protected void createMainColorChooserDialog(){
         final ArrayAdapter<ColorString> listArray = new ArrayAdapter<ColorString> (getContext(), android.R.layout.simple_list_item_1, colorList) {
             @Override
@@ -761,7 +782,11 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         }
     }
 
-    //TODO document
+    /**
+     * Creates the Custom Color Chooser Dialog. This dialog allows the user to enter their own
+     * custom hex code for a color, adding it to the list, and allowing them to stylize the text
+     * based on their own personal color
+     */
     protected void createCustomColorChooserDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         LinearLayout layout = new LinearLayout(getContext());
