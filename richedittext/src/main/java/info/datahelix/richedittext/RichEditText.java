@@ -436,10 +436,9 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                 int wordEnd = -1;
                 int i = 0;
                 try {
-                    //If the selection is at the new line character, then there is no start or end to the word, so apply style there.
-                    if (text.charAt(selStart) == '\n') {
-                        wordStart = selStart;
-                        startFound = true;
+                    //If the selection is at the new line character OR the space character, then there is no start or end to the word, so exit method
+                    if (text.charAt(selStart) == '\n' || text.charAt(selStart) == ' ') {
+                        return;
                     }
                     while (!startFound) {
                         //Look for the first space character before the word to find where the word starts
