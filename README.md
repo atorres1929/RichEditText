@@ -22,6 +22,14 @@ Currently Supported Functions:
 - SuperScript
 - Day/Night Mode
 
+Wanted Features:
+----------------
+- Left, Right, Center align
+- Search Text Function
+- Font Family
+- Font Size
+- Change Subscript/Superscript from dialog input to regular input.
+
 License
 -------
 
