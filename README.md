@@ -28,6 +28,10 @@ Wanted Features:
 - Search Text Function
 - Font Family
 - Font Size
+- Undo/Redo
+- Insert Image
+- Insert Link
+- Line Spacing
 - Change Subscript/Superscript from dialog input to regular input.
 
 License
