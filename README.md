@@ -2,6 +2,26 @@ RichEditText For Android
 ------------------------
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
+The intention in making this project was to create a lightweight simple rich text editor that anyone could drag and drop into their project with minimal dependencies.
+
+This project is built entirely on the stock android framework and is highly customizable.
+
+You can use all of the functionality of RichEditText, or none of it, it's completely up to you which functions you use, and which buttons you choose to make active.
+
+Currently Supported Functions:
+------------------------------
+- Indent
+- UnIndent
+- Bold
+- Italic
+- Underline
+- Strikethrough
+- Text Color Change
+- Text Color Highlight
+- Subscript
+- SuperScript
+- Day/Night Mode
+
 License
 -------
 
