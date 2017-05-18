@@ -218,7 +218,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
      * @param selEnd   end of selection
      * @see #onSelectionChanged(int, int)
      */
-    public void updateTextStylesOnSelectionChange(int selStart, int selEnd){
+    protected void updateTextStylesOnSelectionChange(int selStart, int selEnd){
         if (onSelectionChangeListener != null) {
             onSelectionChangeListener.onSelectionChange(selStart, selEnd);
         }
@@ -265,6 +265,8 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         //Necessary to implement TextWatcher
     }
 
+
+    protected boolean textChanged = false;
     /**
      * Applies styles to the text upon being input by checking if the corresponding style button is checked.
      *
@@ -276,7 +278,12 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
 
-        //If text being input is 0, then text is being delete. Therefore, no text styles need to be applied
+        if (textChanged) {
+            textChanged = false;
+            return;
+        }
+
+        //If text being input is 0, then text is being deleted. Therefore, no text styles need to be applied
         if (count == 0){
             return;
         }
@@ -289,9 +296,15 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         }
         if (underlineButton != null && underlineButton.isChecked()) {
             getText().setSpan(new RichEditUnderlineSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            if (s.charAt(start+count-1) == ' ') {
+                fixUnderlineSpan();
+            }
         }
         if (strikeThroughButton != null && strikeThroughButton.isChecked()) {
             getText().setSpan(new StrikethroughSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            if (s.charAt(start+count-1) == ' ') {
+                fixStrikethroughSpan();
+            }
         }
 
         //text color
@@ -310,6 +323,8 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                 getText().setSpan(new BackgroundColorSpan(currentTextHighlightColor.getColor()), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }
+
+        textChanged = true;
     }
 
     /**
@@ -432,71 +447,88 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
      * @throws InstantiationException
      */
     protected void updateTextStylesOnButtonPress(ToggleButton button, Class c) throws IllegalAccessException, InstantiationException {
-        int selStart = this.getSelectionStart();
-        int selEnd = this.getSelectionEnd();
-        Editable text = getText();
         if (button.isChecked()) {
-            if (selStart != selEnd) {
-                String[] words = text.subSequence(selStart, selEnd).toString().split(" ");
-                int i = 0;
-                for (String word : words) {
-                    text.setSpan(c.newInstance(), selStart + i, selStart + i + word.length() + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    i += word.length() + 1;
-                }
-            }
-
-            //Look for the beginning and end of a word
-            else {
-                boolean startFound = false;
-                boolean endFound = false;
-                int wordStart = -1;
-                int wordEnd = -1;
-                int i = 0;
-                try {
-                    //If the selection is at the new line character OR the space character, then there is no start or end to the word, so exit method
-                    if (text.charAt(selStart) == '\n' || text.charAt(selStart) == ' ') {
-                        return;
-                    }
-                    while (!startFound) {
-                        //Look for the first space character before the word to find where the word starts
-                        if (text.charAt(selStart - i) != ' ') {
-                            i += 1;
-                        }
-                        else {
-                            wordStart = selStart - i;
-                            startFound = true;
-                        }
-                    }
-                } catch (IndexOutOfBoundsException e) {
-                    Log.d(TAG, "#updateTextStylesOnButtonPress word search reached zero while updating text style");
-                    wordStart = -1; // -1 because this algorithm adds 1 at end to compensate for spaces, -1+1 = 0
-                }
-
-                try {
-                    i = 0;
-                    while (!endFound) {
-                        //Look for the first space character after the word to find where the word ends
-                        if (text.charAt(selStart + i) != ' ') {
-                            i += 1;
-                        } else {
-                            wordEnd = selStart + i;
-                            endFound = true;
-                        }
-                    }
-                } catch (IndexOutOfBoundsException e){
-                    Log.d(TAG, "#updateTextStylesOnButtonPress word search reached end of text while updating text style");
-                    wordEnd = getText().length();
-                }
-                try {
-                    text.setSpan(c.newInstance(), wordStart + 1, wordEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                } catch (IndexOutOfBoundsException e) {
-                    Log.e(TAG, "Cannot make a span of negative size!", e);
-                }
-            }
+            applyStyleInSelection(c);
         }
         else {
             removeTextStylesWithinSelection(c);
         }
+    }
+
+    protected void applyStyleInSelection(Class c) throws IllegalAccessException, InstantiationException {
+        int selStart = this.getSelectionStart();
+        int selEnd = this.getSelectionEnd();
+        Editable text = getText();
+        if (selStart != selEnd) {
+            String[] words = text.subSequence(selStart, selEnd).toString().split(" ");
+            int i = 0;
+            for (String word : words) {
+                text.setSpan(c.newInstance(), selStart + i, selStart + i + word.length() + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                i += word.length() + 1;
+            }
+        }
+
+        //Look for the beginning and end of a word
+        else {
+            int wordStart = findStartWordAtSelection();
+            int wordEnd = findEndWordAtSelection();
+            try {
+                text.setSpan(c.newInstance(), wordStart + 1, wordEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            } catch (IndexOutOfBoundsException e) {
+                Log.e(TAG, "Cannot make a span of negative size!", e);
+            }
+        }
+    }
+
+    protected int findStartWordAtSelection(){
+        Editable text = getText();
+        int selStart = getSelectionStart();
+        boolean startFound = false;
+        int wordStart = -1;
+        int i = 0;
+        try {
+            //If the selection is at the new line character, then there is no start or end to the word, so exit method
+            if (text.charAt(selStart-1) == '\n' || text.charAt(selStart-1) == ' ') {
+                selStart -= 2;
+            }
+            while (!startFound) {
+                //Look for the first space character before the word to find where the word starts
+                if (text.charAt(selStart - i) != ' ' && text.charAt(selStart - i) != '\n') {
+                    i += 1;
+                }
+                else {
+                    wordStart = selStart - i;
+                    startFound = true;
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+            Log.d(TAG, "#updateTextStylesOnButtonPress word search reached zero while updating text style");
+            wordStart = -1; // -1 because this algorithm adds 1 at end to compensate for spaces, -1+1 = 0
+        }
+        return wordStart;
+    }
+
+    protected int findEndWordAtSelection(){
+        Editable text = getText();
+        int selStart = getSelectionEnd();
+        boolean endFound = false;
+        int wordEnd = -1;
+        int i = 0;
+        try {
+            while (!endFound) {
+                //Look for the first space character after the word to find where the word ends
+                if (text.charAt(selStart + i) != ' ' && text.charAt(selStart - i) != '\n') {
+                    i += 1;
+                } else {
+                    wordEnd = selStart + i;
+                    endFound = true;
+                }
+            }
+        } catch (IndexOutOfBoundsException e){
+            Log.d(TAG, "#updateTextStylesOnButtonPress word search reached end of text while updating text style");
+            wordEnd = getText().length();
+        }
+        return wordEnd;
     }
 
     /**
@@ -511,31 +543,57 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     protected void removeTextStylesWithinSelection(Class c) {
         int start = getSelectionStart();
         int end = getSelectionEnd();
-        if (start != end){
-            for (Object span : this.getText().getSpans(start, end, c)) {
-                if (span.getClass().equals(c)) {
-                    this.getText().removeSpan(span);
-                }
+        for (Object span : this.getText().getSpans(start, end, c)) {
+            if (span.getClass().equals(c)) {
+                this.getText().removeSpan(span);
             }
         }
+//            List<Object> spanList = Arrays.asList(getText().getSpans(0, getText().length(), c));
+//            for (Object span: getText().getSpans(start, end, c)) {
+//                if (span.getClass().equals(c)) {
+//                    int index = spanList.indexOf(span); //Grabs index of span at cursor
+//                    if (index > 0) {                    //Check if span is not the first span of this type, if so readjust previous span so that span does not include space between words
+//                        Object previous = spanList.get(index - 1); //Gets previous span
+//                        int previousStart = getText().getSpanStart(previous); //previous span start
+//                        int previousEnd = getText().getSpanEnd(previous);       //previous span end
+//                        if (previousStart != -1 && previousEnd != -1 && getText().charAt(previousEnd - 1) == ' ') {           //Check to see if the first character in the previous span is a space
+//                            getText().setSpan(previous, previousStart, previousEnd - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); //set span end to be 1 less
+//                        }
+//                    }
+    }
 
-        else {
-            List<Object> spanList = Arrays.asList(getText().getSpans(0, getText().length(), c));
-            for (Object span: getText().getSpans(start, end, c)) {
-                if (span.getClass().equals(c)) {
-                    int index = spanList.indexOf(span); //Grabs index of span at cursor
-                    if (index > 0) {                    //Check if span is first span of this type, if so readjust previous span so that span does not include space between words
-                        Object previous = spanList.get(index - 1); //Gets previous span
-                        int previousStart = getText().getSpanStart(previous); //previous span start
-                        int previousEnd = getText().getSpanEnd(previous);       //previous span end
-                        if (previousStart != -1 && previousEnd != -1 && getText().charAt(previousEnd - 1) == ' ') {           //Check to see if the first character in the previous span is a space
-                            getText().setSpan(previous, previousStart, previousEnd - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); //set span end to be 1 less
-                        }
-                    }
-                    this.getText().removeSpan(span);
-                }
-            }
+    protected void fixUnderlineSpan() {
+        int startWord = findStartWordAtSelection()+1;
+        int endWord = findEndWordAtSelection();
+        for (int i = startWord; i < endWord; i++) {
+            setSelection(i);
+            removeTextStylesWithinSelection(UnderlineSpan.class);
         }
+        setSelection(startWord, endWord);
+        try {
+            applyStyleInSelection(UnderlineSpan.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        setSelection(endWord);
+    }
+
+    protected void fixStrikethroughSpan() {
+        int startWord = findStartWordAtSelection();
+        int endWord = findEndWordAtSelection();
+        Editable text = getText();
+        setSelection(startWord+1, endWord);
+        removeTextStylesWithinSelection(StrikethroughSpan.class);
+        StrikethroughSpan[] spans = text.getSpans(startWord, endWord, StrikethroughSpan.class);
+        if (spans.length > 1){
+            Log.e(TAG, "More than one span was found when fixing span!");
+        }
+        else {
+            int spanStart = text.getSpanStart(spans[0]);
+            text.removeSpan(spans[0]);
+            text.setSpan(new StrikethroughSpan(), spanStart, endWord, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        setSelection(endWord);
     }
 
     /**
