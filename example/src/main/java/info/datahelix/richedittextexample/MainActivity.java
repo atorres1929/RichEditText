@@ -18,6 +18,7 @@ package info.datahelix.richedittextexample;
 
 import android.content.Intent;
 import android.graphics.Paint;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -124,7 +125,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
             case R.id.action_github:
-                //TODO link to github
+                String github = "https://www.github.com/atorres1929/RichEditText";
+                intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(github));
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
