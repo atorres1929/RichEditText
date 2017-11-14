@@ -128,8 +128,6 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     //Color Related
     protected View textColorButton;
     protected View highlightColorButton;
-    protected ColorDrawable defaultTextColor = new ColorDrawable(Color.BLACK);
-    protected ColorDrawable defaultNightTextColor = new ColorDrawable(Color.WHITE);
     protected ColorDrawable currentTextColor;
     protected ColorDrawable currentTextHighlightColor;
 
@@ -311,7 +309,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
 
         //text color
         //Check if text color is the same as defaultColor
-        if (currentTextColor != null && (defaultTextColor.getColor() != currentTextColor.getColor())) { //On loading the editor, the color will be null
+        if (currentTextColor != null) { //On loading the editor, the color will be null
             getText().setSpan(new ForegroundColorSpan(currentTextColor.getColor()), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
