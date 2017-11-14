@@ -25,6 +25,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatEditText;
 import android.text.Editable;
@@ -56,9 +57,7 @@ import android.widget.ToggleButton;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.List;
 
 import static android.R.id.text1;
 
@@ -115,7 +114,7 @@ import static android.R.id.text1;
 public class RichEditText extends AppCompatEditText implements TextWatcher, View.OnClickListener, DialogInterface.OnClickListener{
 
     protected final String TAG = "RichEditText";
-    protected final String spaceCharacter = " ";
+    protected final char SPACE_CHARACTER = ' ';
     protected OnSelectionChangeListener onSelectionChangeListener;
     protected ToggleButton boldButton;
     protected ToggleButton italicButton;
@@ -129,8 +128,11 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     //Color Related
     protected View textColorButton;
     protected View highlightColorButton;
+    protected ColorDrawable defaultTextColor = new ColorDrawable(Color.BLACK);
+    protected ColorDrawable defaultNightTextColor = new ColorDrawable(Color.WHITE);
     protected ColorDrawable currentTextColor;
     protected ColorDrawable currentTextHighlightColor;
+
     //Color Dialog Related
     protected ArrayList<ColorString> colorList;
     protected AlertDialog mainColorChooserDialog;
@@ -296,24 +298,25 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         }
         if (underlineButton != null && underlineButton.isChecked()) {
             getText().setSpan(new RichEditUnderlineSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            if (s.charAt(start+count-1) == ' ') {
+            if (s.charAt(start+count-1) == SPACE_CHARACTER) {
                 fixUnderlineSpan();
             }
         }
         if (strikeThroughButton != null && strikeThroughButton.isChecked()) {
             getText().setSpan(new StrikethroughSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            if (s.charAt(start+count-1) == ' ') {
+            if (s.charAt(start+count-1) == SPACE_CHARACTER) {
                 fixStrikethroughSpan();
             }
         }
 
         //text color
-        if (currentTextColor != null) { //On loading the editor, the color will be null
+        //Check if text color is the same as defaultColor
+        if (currentTextColor != null && (defaultTextColor.getColor() != currentTextColor.getColor())) { //On loading the editor, the color will be null
             getText().setSpan(new ForegroundColorSpan(currentTextColor.getColor()), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
         //text highlight color
-        if (currentTextHighlightColor != null) { //On loading the edtior, the color will be null
+        if (currentTextHighlightColor != null) { //On loading the editor, the color will be null
             if (getBackground() instanceof ColorDrawable) { //if the background of the editor is a color, then
                 if (((ColorDrawable) getBackground()).getColor() != currentTextHighlightColor.getColor()) { //check if the editor background color is != to the text's background color
                     getText().setSpan(new BackgroundColorSpan(currentTextHighlightColor.getColor()), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); //if so, then okay to color
@@ -735,7 +738,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         int selectionEnd = getSelectionEnd();
         String tabs = "";
         for (int i = 0; i < numTabs; i++) {
-            tabs += spaceCharacter;
+            tabs += SPACE_CHARACTER;
         }
         Editable newText = getText().insert(getSelectionStart(), tabs);
         setText(newText);
@@ -756,7 +759,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         if (selectionStart >= numTabs) {
             String tabCharacter = "";
             for (int i = 0; i < numTabs; i++){
-                tabCharacter += spaceCharacter;
+                tabCharacter += SPACE_CHARACTER;
             }
             CharSequence oldText = getText().subSequence(selectionStart - numTabs, selectionStart);
             if (oldText.toString().equals(tabCharacter)){
@@ -930,7 +933,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
             setUnindentButton(unindentButton);
             setIndentButton(indentButton);
             setTextColorButton(textColorButton);
-            setHighlightColorButton(highlightColorButton);
+            setTextHighlightColorButton(highlightColorButton);
     }
 
     public void setBoldButton(ToggleButton button) {
@@ -978,7 +981,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         this.textColorButton.setOnClickListener(this);
     }
 
-    public void setHighlightColorButton(View button){
+    public void setTextHighlightColorButton(View button){
         this.highlightColorButton = button;
         this.highlightColorButton.setOnClickListener(this);
     }
