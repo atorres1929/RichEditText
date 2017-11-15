@@ -3,12 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/action_dayMode"
-        android:title="Day Mode" />
-    <item
-        android:id="@+id/action_nightMode"
-        android:title="Night Mode" />
-    <item
         android:id="@+id/action_github"
         android:title="Github Link" />
 </menu>

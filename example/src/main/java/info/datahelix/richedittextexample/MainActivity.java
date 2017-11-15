@@ -22,10 +22,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
-import android.text.Spanned;
-import android.text.style.UnderlineSpan;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -41,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private RichEditText editor;
 
     private final String TAG = "MainActivity";
+    private final String KEY_TEXT = "text";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,8 +47,8 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         editor = (RichEditText) findViewById(R.id.editor);
 
-        if (getIntent().hasExtra("text")) {
-            editor.setText(getIntent().getCharSequenceExtra("text"));
+        if (getIntent().hasExtra(KEY_TEXT)) {
+            editor.setText(getIntent().getCharSequenceExtra(KEY_TEXT));
         }
 
         /*
@@ -110,20 +108,6 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         Intent intent;
         switch (item.getItemId()){
-            case R.id.action_dayMode:
-                getDelegate().setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                intent = new Intent(MainActivity.this, MainActivity.class);
-                intent.putExtra("text", editor.getText());
-                finish();
-                startActivity(intent);
-                return true;
-            case R.id.action_nightMode:
-                getDelegate().setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                intent = new Intent(MainActivity.this, MainActivity.class);
-                intent.putExtra("text", editor.getText());
-                finish();
-                startActivity(intent);
-                return true;
             case R.id.action_github:
                 String github = "https://www.github.com/atorres1929/RichEditText";
                 intent = new Intent(Intent.ACTION_VIEW);
