@@ -20,7 +20,6 @@ Currently Supported Functions:
 - Text Color Highlight
 - Subscript
 - SuperScript
-- Day/Night Mode
 
 Wanted Features:
 ----------------
@@ -33,6 +32,7 @@ Wanted Features:
 - Insert Link
 - Line Spacing
 - Change Subscript/Superscript from dialog input to regular input.
+- Day/Night mode
 
 License
 -------
