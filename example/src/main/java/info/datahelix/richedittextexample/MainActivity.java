@@ -86,22 +86,51 @@ public class MainActivity extends AppCompatActivity {
 
         editor.setSettings(primaryColor, backgroundColor, colorList, numTabs, relativeSize, alpha);
 
+
+        //Main Buttons
         ToggleButton boldButton = (ToggleButton) findViewById(R.id.bold);
         ToggleButton italicButton = (ToggleButton) findViewById(R.id.italic);
+
         ToggleButton underlineButton = (ToggleButton) findViewById(R.id.underline);
         underlineButton.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
+
         ToggleButton strikethroughButton = (ToggleButton) findViewById(R.id.strikethrough);
         strikethroughButton.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+
+
+        //Subscript and Superscript
+        ImageButton subscriptButton = (ImageButton) findViewById(R.id.subscript);
+        ImageButton superscriptButton = (ImageButton) findViewById(R.id.superscript);
 
         ImageButton indentButton = (ImageButton) findViewById(R.id.indent);
         ImageButton unindentButton = (ImageButton) findViewById(R.id.unindent);
 
+
+        //Text color and highlight
         ImageButton textColorButton = (ImageButton) findViewById(R.id.textcolor);
         ImageButton textHighlightButton = (ImageButton) findViewById(R.id.highlighter);
 
-        ImageButton subscriptButton = (ImageButton) findViewById(R.id.subscript);
-        ImageButton superscriptButton = (ImageButton) findViewById(R.id.superscript);
-        editor.setAllButtons(boldButton, italicButton, underlineButton, strikethroughButton, subscriptButton, superscriptButton, unindentButton, indentButton, textColorButton, textHighlightButton);
+
+        //Date button and time button
+        ImageButton dateButton = (ImageButton) findViewById(R.id.dateButton);
+        ImageButton timeButton = (ImageButton) findViewById(R.id.timeButton);
+
+
+        //Page up, Page Down
+        ImageButton pageUpButton = (ImageButton) findViewById(R.id.pageUpButton);
+        ImageButton pageDownButton = (ImageButton) findViewById(R.id.pageDownButton);
+
+
+        //Undo, Redo
+        ImageButton undoButton = (ImageButton) findViewById(R.id.undoButton);
+        ImageButton redoButton = (ImageButton) findViewById( R.id.redoButton);
+        editor.setAllButtons(boldButton, italicButton, underlineButton, strikethroughButton,
+                subscriptButton, superscriptButton,
+                unindentButton, indentButton,
+                textColorButton, textHighlightButton,
+                timeButton, dateButton,
+                pageUpButton, pageDownButton,
+                undoButton, redoButton);
     }
 
     @Override

@@ -56,10 +56,14 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Stack;
 
+import static android.R.id.redo;
 import static android.R.id.text1;
+import static android.R.id.undo;
 
 
 //TODO Undo/Redo
@@ -109,13 +113,22 @@ import static android.R.id.text1;
  * @see ToggleButton
  * @see OnClickListener
  * @see TextWatcher
- * @author Adam Torres (Artifexium)
+ * @author Adam Torres
  */
 public class RichEditText extends AppCompatEditText implements TextWatcher, View.OnClickListener, DialogInterface.OnClickListener{
 
+    //Constants
     protected final String TAG = "RichEditText";
     protected final char SPACE_CHARACTER = ' ';
+
+    //Selection change support
     protected OnSelectionChangeListener onSelectionChangeListener;
+
+    //Undo and Redo
+    protected Stack<CharSequenceMemory> undoStack = new Stack<>();
+    protected Stack<CharSequenceMemory> redoStack = new Stack<>();
+
+    //Buttons
     protected ToggleButton boldButton;
     protected ToggleButton italicButton;
     protected ToggleButton underlineButton;
@@ -124,6 +137,12 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     protected View superscriptButton;
     protected View indentButton;
     protected View unindentButton;
+    protected View undoButton;
+    protected View redoButton;
+    protected View insertDateButton;
+    protected View insertTimeButton;
+    protected View pageUpButton;
+    protected View pageDownButton;
 
     //Color Related
     protected View textColorButton;
@@ -159,9 +178,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     /**
      * Default Constructor needed to extend {@link EditText}
      */
-    public RichEditText(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-    }
+    public RichEditText(Context context, AttributeSet attrs, int defStyleAttr) { super(context, attrs, defStyleAttr); }
 
     /**
      * Set up the default settings of the editor
@@ -257,16 +274,23 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         }
     }
 
+    protected boolean undoActionInProgress = false;
+
     /**
      *@see TextWatcher
      */
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
         //Necessary to implement TextWatcher
+        if (!undoActionInProgress) {
+            undoStack.push(new CharSequenceMemory(s.subSequence(start, start + count), start));
+        }
+        undoActionInProgress = false;
     }
 
 
     protected boolean textChanged = false;
+
     /**
      * Applies styles to the text upon being input by checking if the corresponding style button is checked.
      *
@@ -279,6 +303,12 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     public void onTextChanged(CharSequence s, int start, int before, int count) {
 
         if (textChanged) {
+            if (!undoActionInProgress && undoStack.size() % 2 == 1) {
+                //The stack size must always be odd, as the push in #beforeTextChanged must have gone off prior
+                //This check prevents the pushing to the stack when an undo is performed on an entire word.
+                //The count == 0 check below prevents pushing to the stack when an undo is done on a single letter.
+                undoStack.push(new CharSequenceMemory(s.subSequence(start, start + count), start));
+            }
             textChanged = false;
             return;
         }
@@ -350,7 +380,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                     customColorChooserDialog.show();
                     dialog.dismiss();
                     break;
-                default: //which == index of the item cilcked in the list
+                default: //which == index of the item clicked in the list
                     ColorString color = colorList.remove(which);
                     colorList.add(0, color);
                     if (changingTextColor){
@@ -427,7 +457,16 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                 textColorAction();
             } else if (id == highlightColorButton.getId()) {
                 highlightColorAction();
-            } else {
+            } else if (id == insertDateButton.getId()){
+                insertDateAction();
+            } else if (id == insertTimeButton.getId()){
+                insertTimeAction();
+            } else if (id == undoButton.getId()){
+                undoAction();
+            } else if (id == redoButton.getId()){
+                redoAction();
+            }
+            else {
                 throw new UnknownButtonReferenceException("Check to make sure all buttons have properly set listeners");
             }
         } catch (UnknownButtonReferenceException e) {
@@ -773,6 +812,43 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         }
     }
 
+    public void undoAction(){
+        if (undoStack.size() > 0) {
+            CharSequenceMemory textEntered = undoStack.pop();
+            CharSequenceMemory textReplaced = undoStack.pop();
+            undoActionInProgress = true;
+            this.getEditableText().replace(textEntered.getStart(), textEntered.getStart() + textEntered.getCharSequence().length(), textReplaced.getCharSequence());
+        }
+    }
+
+    public void redoAction(){
+        CharSequenceMemory memory = redoStack.pop();
+        this.getEditableText().append(memory.getCharSequence(), memory.getStart(), memory.getCharSequence().length());
+    }
+
+    public void insertTimeAction(){
+        Calendar c = Calendar.getInstance();
+        String date = c.get(Calendar.HOUR)+":"+c.get(Calendar.MINUTE)+":"+c.get(Calendar.SECOND);
+        String newText = getText().insert(getSelectionStart(), date).toString();
+        setText(newText);
+        setSelection(getSelectionStart()+date.length());
+    }
+
+    public void insertDateAction(){
+        Calendar c = Calendar.getInstance();
+        String time = c.get(Calendar.MONTH)+"-"+c.get(Calendar.DAY_OF_MONTH)+"-"+c.get(Calendar.YEAR);
+        String newText = getText().insert(getSelectionStart(), time).toString();
+        setText(newText);
+        setSelection(getSelectionStart()+time.length());
+    }
+
+    protected void pageUpAction(){setSelection(0);}
+
+    protected void pageDownAction(){
+        setSelection(getText().length());
+    }
+
+
     /**
      * Opens a dialog in which the user can enter text to either be
      * subscripted or superscripted depending on {@code span}
@@ -879,31 +955,6 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         }
     }
 
-    protected void insertTimeAction(){
-        Calendar c = Calendar.getInstance();
-        String date = "<"+c.get(Calendar.HOUR)+":"+c.get(Calendar.MINUTE)+":"+c.get(Calendar.SECOND)+">";
-        String newText = getText().insert(getSelectionStart(), date).toString();
-        setText(newText);
-        setSelection(getSelectionStart()+date.length());
-    }
-
-    protected void insertDateAction(){
-        Calendar c = Calendar.getInstance();
-        String time = "<"+c.get(Calendar.MONTH)+"-"+c.get(Calendar.DAY_OF_MONTH)+"-"+c.get(Calendar.YEAR)+">";
-        String newText = getText().insert(getSelectionStart(), time).toString();
-        setText(newText);
-        setSelection(getSelectionStart()+time.length());
-    }
-
-    protected void pageUpAction(){
-        setSelection(0);
-    }
-
-
-    protected void pageDownAction(){
-        setSelection(getText().length());
-    }
-
     /**
      * @return The list of colors that will be displayed to the user when the color chooser dialog is opened.
      *         If the user has set custom colors, then the list will return those as well
@@ -921,7 +972,10 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     public void setAllButtons(ToggleButton boldButton, ToggleButton italicButton, ToggleButton underlineButton, ToggleButton strikeThroughButton,
                               View subscriptButton, View superscriptButton,
                               View unindentButton, View indentButton,
-                              View textColorButton, View highlightColorButton) {
+                              View textColorButton, View highlightColorButton,
+                              View insertTimeButton, View insertDateButton,
+                              View pageUpButton, View pageDownButton,
+                              View undoButton, View redoButton) {
             setBoldButton(boldButton);
             setItalicButton(italicButton);
             setUnderlineButton(underlineButton);
@@ -932,6 +986,12 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
             setIndentButton(indentButton);
             setTextColorButton(textColorButton);
             setTextHighlightColorButton(highlightColorButton);
+            setUndoButton(undoButton);
+            setRedoButton(redoButton);
+            setInsertTimeButton(insertTimeButton);
+            setInsertDateButton(insertDateButton);
+            setPageUpButton(pageUpButton);
+            setPageDownButton(pageDownButton);
     }
 
     public void setBoldButton(ToggleButton button) {
@@ -982,6 +1042,36 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     public void setTextHighlightColorButton(View button){
         this.highlightColorButton = button;
         this.highlightColorButton.setOnClickListener(this);
+    }
+
+    public void setUndoButton(View button){
+        this.undoButton = button;
+        this.undoButton.setOnClickListener(this);
+    }
+
+    public void setRedoButton(View button){
+        this.redoButton = button;
+        this.redoButton.setOnClickListener(this);
+    }
+
+    public void setInsertDateButton(View button){
+        this.insertDateButton = button;
+        this.insertDateButton.setOnClickListener(this);
+    }
+
+    public void setInsertTimeButton(View button){
+        this.insertTimeButton = button;
+        this.insertTimeButton.setOnClickListener(this);
+    }
+
+    public void setPageUpButton(View button){
+        this.pageUpButton = button;
+        this.pageUpButton.setOnClickListener(this);
+    }
+
+    public void setPageDownButton(View button){
+        this.pageDownButton = button;
+        this.pageDownButton.setOnClickListener(this);
     }
 
     public void setCurrentTextColor(ColorDrawable color){
@@ -1114,6 +1204,20 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         private RichEditItalicSpan(int style) {
             super(style);
         }
+    }
+
+    public class CharSequenceMemory {
+        private CharSequence s;
+        private int start;
+
+        public CharSequenceMemory(CharSequence s, int start){
+            this.s = s;
+            this.start = start;
+        }
+
+        public CharSequence getCharSequence(){return s;}
+
+        public int getStart(){return start;}
     }
 
     /**

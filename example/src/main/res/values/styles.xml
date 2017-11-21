@@ -5,23 +5,9 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="indent_icon">@drawable/ic_indent</item>
-        <item name="unindent_icon">@drawable/ic_unindent</item>
-        <item name="subscript_icon">@drawable/ic_subscript</item>
-        <item name="superscript_icon">@drawable/ic_superscript</item>
-        <item name="textcolor_icon">@drawable/ic_text_color</item>
-        <item name="highlight_icon">@drawable/ic_highlight</item>
         <item name="android:textColorPrimary">@color/textColorPrimary</item>
         <item name="android:textColorSecondary">@color/textColorSecondary</item>
     </style>
-
-    <!-- Attributes -->
-    <attr name="indent_icon" format="reference"/>
-    <attr name="unindent_icon" format="reference"/>
-    <attr name="subscript_icon" format="reference"/>
-    <attr name="superscript_icon" format="reference"/>
-    <attr name="highlight_icon" format="reference"/>
-    <attr name="textcolor_icon" format="reference"/>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 

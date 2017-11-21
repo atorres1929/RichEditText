@@ -39,14 +39,14 @@
                 android:layout_width="@dimen/horizontal_scroll_button_size"
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_button_bordered"
-                android:src="?attr/unindent_icon" />
+                android:src="@drawable/ic_unindent" />
 
             <ImageButton
                 android:id="@+id/indent"
                 android:layout_width="@dimen/horizontal_scroll_button_size"
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_button_bordered"
-                android:src="?attr/indent_icon" />
+                android:src="@drawable/ic_indent" />
 
             <ToggleButton
                 android:id="@+id/bold"
@@ -95,28 +95,70 @@
                 android:layout_width="@dimen/horizontal_scroll_button_size"
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_button_bordered"
-                android:src="?attr/textcolor_icon" />
+                android:src="@drawable/ic_text_color" />
 
             <ImageButton
                 android:id="@+id/highlighter"
                 android:layout_width="@dimen/horizontal_scroll_button_size"
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_button_bordered"
-                android:src="?attr/highlight_icon" />
+                android:src="@drawable/ic_highlight" />
 
             <ImageButton
                 android:id="@+id/subscript"
                 android:layout_width="@dimen/horizontal_scroll_button_size"
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_button_bordered"
-                android:src="?attr/subscript_icon" />
+                android:src="@drawable/ic_subscript" />
 
             <ImageButton
                 android:id="@+id/superscript"
                 android:layout_width="@dimen/horizontal_scroll_button_size"
                 android:layout_height="@dimen/horizontal_scroll_button_size"
                 android:background="@drawable/custom_button_bordered"
-                android:src="?attr/superscript_icon" />
+                android:src="@drawable/ic_superscript" />
+
+            <ImageButton
+                android:id="@+id/timeButton"
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_button_bordered"
+                android:src="@drawable/ic_time"/>
+
+            <ImageButton
+                android:id="@+id/dateButton"
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_button_bordered"
+                android:src="@drawable/ic_date"/>
+
+            <ImageButton
+                android:id="@+id/pageUpButton"
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_button_bordered"
+                android:src="@drawable/ic_page_up"/>
+
+            <ImageButton
+                android:id="@+id/pageDownButton"
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_button_bordered"
+                android:src="@drawable/ic_page_down"/>
+
+            <ImageButton
+                android:id="@+id/undoButton"
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_button_bordered"
+                android:src="@drawable/ic_undo"/>
+
+            <ImageButton
+                android:id="@+id/redoButton"
+                android:layout_width="@dimen/horizontal_scroll_button_size"
+                android:layout_height="@dimen/horizontal_scroll_button_size"
+                android:background="@drawable/custom_button_bordered"
+                android:src="@drawable/ic_redo"/>
 
         </LinearLayout>
     </HorizontalScrollView>
