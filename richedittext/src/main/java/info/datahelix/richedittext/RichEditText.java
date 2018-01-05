@@ -25,12 +25,12 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatEditText;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.ParcelableSpan;
+import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextWatcher;
@@ -56,14 +56,12 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Stack;
 
-import static android.R.id.redo;
 import static android.R.id.text1;
-import static android.R.id.undo;
 
 
 //TODO Undo/Redo
@@ -125,8 +123,10 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     protected OnSelectionChangeListener onSelectionChangeListener;
 
     //Undo and Redo
-    protected Stack<CharSequenceMemory> undoStack = new Stack<>();
-    protected Stack<CharSequenceMemory> redoStack = new Stack<>();
+    protected Stack<CharSequenceMemory> undoStackChar = new Stack<>();
+    protected Stack<CharSequenceMemory> redoStackChar = new Stack<>();
+    protected Stack<StyleMemory[]> undoStackStyle = new Stack<>();
+    protected Stack<StyleMemory> redoStackStyle = new Stack<>();
 
     //Buttons
     protected ToggleButton boldButton;
@@ -281,9 +281,13 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
      */
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-        //Necessary to implement TextWatcher
         if (!undoActionInProgress) {
-            undoStack.push(new CharSequenceMemory(s.subSequence(start, start + count), start));
+            undoStackChar.push(new CharSequenceMemory(s.subSequence(start, start + count), start));
+            Object[] spans = getEditableText().getSpans(start, start + count, Object.class);
+            StyleMemory[] styles = new StyleMemory[spans.length];
+            for (int i = 0; i < styles.length; i++) {
+                styles[i] = new StyleMemory(spans[i], start, start + count);
+            }
         }
         undoActionInProgress = false;
     }
@@ -303,11 +307,10 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     public void onTextChanged(CharSequence s, int start, int before, int count) {
 
         if (textChanged) {
-            if (!undoActionInProgress && undoStack.size() % 2 == 1) {
+            if (!undoActionInProgress && undoStackChar.size() % 2 == 1) {
                 //The stack size must always be odd, as the push in #beforeTextChanged must have gone off prior
                 //This check prevents the pushing to the stack when an undo is performed on an entire word.
-                //The count == 0 check below prevents pushing to the stack when an undo is done on a single letter.
-                undoStack.push(new CharSequenceMemory(s.subSequence(start, start + count), start));
+                undoStackChar.push(new CharSequenceMemory(s.subSequence(start, start + count), start));
             }
             textChanged = false;
             return;
@@ -318,20 +321,26 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
             return;
         }
 
+        Object styleSpan;
+        ArrayList<StyleMemory> styleMemories = new ArrayList<>();
         if (boldButton != null && boldButton.isChecked()) {
-            getText().setSpan(new RichEditBoldSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            getText().setSpan(styleSpan = new RichEditBoldSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            styleMemories.add(new StyleMemory(styleSpan, start, start + count));
         }
         if (italicButton != null && italicButton.isChecked()) {
-            getText().setSpan(new RichEditItalicSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            getText().setSpan(styleSpan = new RichEditItalicSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            styleMemories.add(new StyleMemory(styleSpan, start, start + count));
         }
         if (underlineButton != null && underlineButton.isChecked()) {
-            getText().setSpan(new RichEditUnderlineSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            getText().setSpan(styleSpan = new RichEditUnderlineSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            styleMemories.add(new StyleMemory(styleSpan, start, start + count));
             if (s.charAt(start+count-1) == SPACE_CHARACTER) {
                 fixUnderlineSpan();
             }
         }
         if (strikeThroughButton != null && strikeThroughButton.isChecked()) {
-            getText().setSpan(new StrikethroughSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            getText().setSpan(styleSpan = new StrikethroughSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            styleMemories.add(new StyleMemory(styleSpan, start, start + count));
             if (s.charAt(start+count-1) == SPACE_CHARACTER) {
                 fixStrikethroughSpan();
             }
@@ -340,21 +349,25 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         //text color
         //Check if text color is the same as defaultColor
         if (currentTextColor != null) { //On loading the editor, the color will be null
-            getText().setSpan(new ForegroundColorSpan(currentTextColor.getColor()), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            getText().setSpan(styleSpan = new ForegroundColorSpan(currentTextColor.getColor()), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            styleMemories.add(new StyleMemory(styleSpan, start, start + count));
         }
 
         //text highlight color
         if (currentTextHighlightColor != null) { //On loading the editor, the color will be null
             if (getBackground() instanceof ColorDrawable) { //if the background of the editor is a color, then
                 if (((ColorDrawable) getBackground()).getColor() != currentTextHighlightColor.getColor()) { //check if the editor background color is != to the text's background color
-                    getText().setSpan(new BackgroundColorSpan(currentTextHighlightColor.getColor()), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); //if so, then okay to color
+                    getText().setSpan(styleSpan = new BackgroundColorSpan(currentTextHighlightColor.getColor()), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); //if so, then okay to color
+                    styleMemories.add(new StyleMemory(styleSpan, start, start + count));
                 }
             }
             else { //if the background color isn't a color, then it must be an image or something, so go ahead and set the background color
-                getText().setSpan(new BackgroundColorSpan(currentTextHighlightColor.getColor()), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                getText().setSpan(styleSpan = new BackgroundColorSpan(currentTextHighlightColor.getColor()), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                undoStackStyle.push(new StyleMemory[]{new StyleMemory(styleSpan, start, start + count)});
+                styleMemories.add(new StyleMemory(styleSpan, start, start + count));
             }
         }
-
+        undoStackStyle.push(Arrays.copyOf(styleMemories.toArray(), styleMemories.size(), StyleMemory[].class));
         textChanged = true;
     }
 
@@ -813,16 +826,27 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     }
 
     public void undoAction(){
-        if (undoStack.size() > 0) {
-            CharSequenceMemory textEntered = undoStack.pop();
-            CharSequenceMemory textReplaced = undoStack.pop();
+        if (undoStackChar.size() > 0) {
+            CharSequenceMemory textEntered = undoStackChar.pop();
+            CharSequenceMemory textReplaced = undoStackChar.pop();
             undoActionInProgress = true;
             this.getEditableText().replace(textEntered.getStart(), textEntered.getStart() + textEntered.getCharSequence().length(), textReplaced.getCharSequence());
+        }
+        if (undoStackStyle.size() > 0) {
+            StyleMemory[] styleEntered = undoStackStyle.pop();
+            StyleMemory[] styleReplaced = undoStackStyle.pop();
+            undoActionInProgress = true;
+            for (StyleMemory memory: styleEntered){
+                this.getEditableText().removeSpan(memory.getStyle());
+            }
+            for (StyleMemory memory: styleReplaced){
+                this.getEditableText().setSpan(memory.getStyle(), memory.getStart(), memory.getEnd(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
         }
     }
 
     public void redoAction(){
-        CharSequenceMemory memory = redoStack.pop();
+        CharSequenceMemory memory = redoStackChar.pop();
         this.getEditableText().append(memory.getCharSequence(), memory.getStart(), memory.getCharSequence().length());
     }
 
@@ -1218,6 +1242,24 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         public CharSequence getCharSequence(){return s;}
 
         public int getStart(){return start;}
+    }
+
+    public class StyleMemory {
+        private Object style;
+        private int start;
+        private int end;
+
+        public StyleMemory(Object style, int start, int end){
+            this.style = style;
+            this.start = start;
+            this.end = end;
+        }
+
+        public Object getStyle() {return style;}
+
+        public int getStart() {return start;}
+
+        public int getEnd() {return end;}
     }
 
     /**
