@@ -601,18 +601,6 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                 this.getText().removeSpan(span);
             }
         }
-//            List<Object> spanList = Arrays.asList(getText().getSpans(0, getText().length(), c));
-//            for (Object span: getText().getSpans(start, end, c)) {
-//                if (span.getClass().equals(c)) {
-//                    int index = spanList.indexOf(span); //Grabs index of span at cursor
-//                    if (index > 0) {                    //Check if span is not the first span of this type, if so readjust previous span so that span does not include space between words
-//                        Object previous = spanList.get(index - 1); //Gets previous span
-//                        int previousStart = getText().getSpanStart(previous); //previous span start
-//                        int previousEnd = getText().getSpanEnd(previous);       //previous span end
-//                        if (previousStart != -1 && previousEnd != -1 && getText().charAt(previousEnd - 1) == ' ') {           //Check to see if the first character in the previous span is a space
-//                            getText().setSpan(previous, previousStart, previousEnd - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); //set span end to be 1 less
-//                        }
-//                    }
     }
 
     protected void fixUnderlineSpan() {
