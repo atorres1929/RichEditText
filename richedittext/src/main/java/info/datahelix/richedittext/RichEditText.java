@@ -535,15 +535,17 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         else {
             int wordStart = findStartWordAtSelection();
             int wordEnd = findEndWordAtSelection();
-            StyleMemory[] memory = new StyleMemory[1];
-            try {
-                Object span = c.newInstance();
-                memory[0] = new StyleMemory(span, wordStart + 1, wordEnd);
-                text.setSpan(span, wordStart + 1, wordEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            } catch (IndexOutOfBoundsException e) {
-                Log.e(TAG, "Cannot make a span of negative size!", e);
+            if (wordStart != wordEnd) {
+                StyleMemory[] memory = new StyleMemory[1];
+                try {
+                    Object span = c.newInstance();
+                    memory[0] = new StyleMemory(span, wordStart + 1, wordEnd);
+                    text.setSpan(span, wordStart + 1, wordEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                } catch (IndexOutOfBoundsException e) {
+                    Log.e(TAG, "Cannot make a span of negative size!", e);
+                }
+                undoStackStyle.push(memory);
             }
-            undoStackStyle.push(memory);
         }
     }
 
@@ -556,7 +558,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         try {
             //If the selection is at the new line character, then there is no start or end to the word, so exit method
             if (text.charAt(selStart - 1) == '\n' || text.charAt(selStart - 1) == ' ') {
-                selStart -= 2;
+                return selStart;
             }
             while (!startFound) {
                 //Look for the first space character before the word to find where the word starts
@@ -576,17 +578,20 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
 
     protected int findEndWordAtSelection() {
         Editable text = getText();
-        int selStart = getSelectionEnd();
+        int selEnd = getSelectionEnd();
         boolean endFound = false;
         int wordEnd = -1;
         int i = 0;
         try {
+            if (text.charAt(selEnd - 1) == '\n' || text.charAt(selEnd - 1) == ' ') {
+                return selEnd;
+            }
             while (!endFound) {
                 //Look for the first space character after the word to find where the word ends
-                if (text.charAt(selStart + i) != ' ' && text.charAt(selStart - i) != '\n') {
+                if (text.charAt(selEnd + i) != ' ' && text.charAt(selEnd - i) != '\n') {
                     i += 1;
                 } else {
-                    wordEnd = selStart + i;
+                    wordEnd = selEnd + i;
                     endFound = true;
                 }
             }
