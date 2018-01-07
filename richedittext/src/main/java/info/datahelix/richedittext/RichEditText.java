@@ -291,11 +291,6 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
         if (!undoActionInProgress) {
             undoStackChar.push(new CharSequenceMemory(s.subSequence(start, start + count), start));
-            Object[] spans = getEditableText().getSpans(start, start + count, Object.class);
-            StyleMemory[] styles = new StyleMemory[spans.length];
-            for (int i = 0; i < styles.length; i++) {
-                styles[i] = new StyleMemory(spans[i], start, start + count);
-            }
         }
         undoActionInProgress = false;
     }
@@ -333,22 +328,22 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         ArrayList<StyleMemory> styleMemories = new ArrayList<>();
         if (boldButton != null && boldButton.isChecked()) {
             getText().setSpan(styleSpan = new RichEditBoldSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            styleMemories.add(new StyleMemory(styleSpan, start, start + count));
+            styleMemories.add(new StyleMemory(styleSpan, start, start + count, true));
         }
         if (italicButton != null && italicButton.isChecked()) {
             getText().setSpan(styleSpan = new RichEditItalicSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            styleMemories.add(new StyleMemory(styleSpan, start, start + count));
+            styleMemories.add(new StyleMemory(styleSpan, start, start + count, true));
         }
         if (underlineButton != null && underlineButton.isChecked()) {
             getText().setSpan(styleSpan = new RichEditUnderlineSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            styleMemories.add(new StyleMemory(styleSpan, start, start + count));
+            styleMemories.add(new StyleMemory(styleSpan, start, start + count, true));
             if (s.charAt(start + count - 1) == SPACE_CHARACTER) {
                 fixUnderlineSpan();
             }
         }
         if (strikeThroughButton != null && strikeThroughButton.isChecked()) {
             getText().setSpan(styleSpan = new StrikethroughSpan(), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            styleMemories.add(new StyleMemory(styleSpan, start, start + count));
+            styleMemories.add(new StyleMemory(styleSpan, start, start + count, true));
             if (s.charAt(start + count - 1) == SPACE_CHARACTER) {
                 fixStrikethroughSpan();
             }
@@ -359,7 +354,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         //Check if text color is the same as defaultColor
         if (currentTextColor != null && defaultTextColor.getColor() != currentTextColor.getColor()) {
             getText().setSpan(styleSpan = new ForegroundColorSpan(currentTextColor.getColor()), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            styleMemories.add(new StyleMemory(styleSpan, start, start + count));
+            styleMemories.add(new StyleMemory(styleSpan, start, start + count, true));
         }
 
         //Text highlight color
@@ -367,7 +362,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         //Check if the default color is != to the text's background color
         if (currentTextHighlightColor != null && defaultTextHighlightColor.getColor() != currentTextHighlightColor.getColor()) {
             getText().setSpan(styleSpan = new BackgroundColorSpan(currentTextHighlightColor.getColor()), start, start + count, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); //if so, then okay to color
-            styleMemories.add(new StyleMemory(styleSpan, start, start + count));
+            styleMemories.add(new StyleMemory(styleSpan, start, start + count, true));
         }
 
         //On loading, undoStackStyle will be null
@@ -524,7 +519,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
             StyleMemory[] styleMemories = new StyleMemory[words.length];
             for (int i = 0; i < words.length; i++) {
                 Object span = c.newInstance();
-                styleMemories[i] = new StyleMemory(span, selStart + charIndex, selStart + 1 + words[i].length() + 1);
+                styleMemories[i] = new StyleMemory(span, selStart + charIndex, selStart + 1 + words[i].length() + 1, true);
                 text.setSpan(span, selStart + charIndex, selStart + charIndex + words[i].length() + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 charIndex += words[i].length() + 1;
             }
@@ -539,7 +534,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                 StyleMemory[] memory = new StyleMemory[1];
                 try {
                     Object span = c.newInstance();
-                    memory[0] = new StyleMemory(span, wordStart + 1, wordEnd);
+                    memory[0] = new StyleMemory(span, wordStart + 1, wordEnd, true);
                     text.setSpan(span, wordStart + 1, wordEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 } catch (IndexOutOfBoundsException e) {
                     Log.e(TAG, "Cannot make a span of negative size!", e);
@@ -616,10 +611,10 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         ArrayList<StyleMemory> styleMemories = new ArrayList<>();
         for (Object span : this.getText().getSpans(start, end, c)) {
             if (span.getClass().equals(c)) {
-                this.getText().removeSpan(span);
                 int spanStart = this.getText().getSpanStart(span);
                 int spanEnd = this.getText().getSpanEnd(span);
-                styleMemories.add(new StyleMemory(span, spanStart, spanEnd));
+                this.getText().removeSpan(span);
+                styleMemories.add(new StyleMemory(span, spanStart, spanEnd, false));
             }
         }
         undoStackStyle.push(Arrays.copyOf(styleMemories.toArray(), styleMemories.size(), StyleMemory[].class));
@@ -849,16 +844,16 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
             this.getEditableText().replace(textEntered.getStart(), textEntered.getStart() + textEntered.getCharSequence().length(), textReplaced.getCharSequence());
         }
         if (undoStackStyle.size() > 0) {
-            StyleMemory[] styleEntered = undoStackStyle.pop();
-//            StyleMemory[] styleReplaced = undoStackStyle.pop();
-            undoActionInProgress = true;
-            for (StyleMemory memory : styleEntered) {
-                this.getEditableText().removeSpan(memory.getStyle());
+            StyleMemory[] styles = undoStackStyle.pop();
+            for (StyleMemory style : styles) {
+                if (style.wasApplied()) {
+                    this.getEditableText().removeSpan(style.getStyle());
+                } else {
+                    this.getEditableText().setSpan(style.getStyle(), style.getStart(), style.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
             }
-//            for (StyleMemory memory: styleReplaced){
-//                this.getEditableText().setSpan(memory.getStyle(), memory.getStart(), memory.getEnd(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-//            }
         }
+        //TODO update buttons to match their state
     }
 
     public void redoAction() {
@@ -1284,11 +1279,13 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         private Object style;
         private int start;
         private int end;
+        private boolean applied;
 
-        public StyleMemory(Object style, int start, int end) {
+        public StyleMemory(Object style, int start, int end, boolean applied) {
             this.style = style;
             this.start = start;
             this.end = end;
+            this.applied = applied;
         }
 
         public Object getStyle() {
@@ -1301,6 +1298,10 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
 
         public int getEnd() {
             return end;
+        }
+
+        public boolean wasApplied() {
+            return applied;
         }
     }
 
