@@ -122,8 +122,10 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     protected OnSelectionChangeListener onSelectionChangeListener;
 
     //Undo and Redo
-    protected Stack<CharSequenceMemory> undoStackChar = new Stack<>();
-    protected Stack<CharSequenceMemory> redoStackChar = new Stack<>();
+    protected Stack<SelectionMemory> undoStackCharacterSelection = new Stack<>();
+    protected Stack<CharSequenceMemory> undoStackCharacter = new Stack<>();
+    protected Stack<CharSequenceMemory> redoStackCharacter = new Stack<>();
+    protected Stack<SelectionMemory> undoStackStyleSelection = new Stack<>();
     protected Stack<StyleMemory[]> undoStackStyle = new Stack<>();
     protected Stack<StyleMemory> redoStackStyle = new Stack<>();
 
@@ -290,7 +292,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
         if (!undoActionInProgress) {
-            undoStackChar.push(new CharSequenceMemory(s.subSequence(start, start + count), start));
+            undoStackCharacter.push(new CharSequenceMemory(s.subSequence(start, start + count), start));
         }
         undoActionInProgress = false;
     }
@@ -310,10 +312,10 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     public void onTextChanged(CharSequence s, int start, int before, int count) {
 
         if (textChanged) {
-            if (!undoActionInProgress && undoStackChar.size() % 2 == 1) {
+            if (!undoActionInProgress && undoStackCharacter.size() % 2 == 1) {
                 //The stack size must always be odd, as the push in #beforeTextChanged must have gone off prior
                 //This check prevents the pushing to the stack when an undo is performed on an entire word.
-                undoStackChar.push(new CharSequenceMemory(s.subSequence(start, start + count), start));
+                undoStackCharacter.push(new CharSequenceMemory(s.subSequence(start, start + count), start));
             }
             textChanged = false;
             return;
@@ -837,27 +839,31 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     }
 
     public void undoAction() {
-        if (undoStackChar.size() > 0) {
-            CharSequenceMemory textEntered = undoStackChar.pop();
-            CharSequenceMemory textReplaced = undoStackChar.pop();
+        if (undoStackCharacter.size() > 0) {
+            CharSequenceMemory textEntered = undoStackCharacter.pop();
+            CharSequenceMemory textReplaced = undoStackCharacter.pop();
             undoActionInProgress = true;
             this.getEditableText().replace(textEntered.getStart(), textEntered.getStart() + textEntered.getCharSequence().length(), textReplaced.getCharSequence());
+            setSelection(textEntered.getStart(), textEntered.getStart()+ textEntered.getCharSequence().length());
         }
         if (undoStackStyle.size() > 0) {
-            StyleMemory[] styles = undoStackStyle.pop();
-            for (StyleMemory style : styles) {
-                if (style.wasApplied()) {
-                    this.getEditableText().removeSpan(style.getStyle());
+            StyleMemory[] memories = undoStackStyle.pop();
+            int end = memories[memories.length - 1].getStart();
+            int start = memories[0].getStart();
+            for (StyleMemory memory : memories) {
+                if (memory.wasApplied()) {
+                    this.getEditableText().removeSpan(memory.getStyle());
                 } else {
-                    this.getEditableText().setSpan(style.getStyle(), style.getStart(), style.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    this.getEditableText().setSpan(memory.getStyle(), memory.getStart(), memory.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
             }
+            setSelection(start, end);
         }
         //TODO update buttons to match their state
     }
 
     public void redoAction() {
-        CharSequenceMemory memory = redoStackChar.pop();
+        CharSequenceMemory memory = redoStackCharacter.pop();
         this.getEditableText().append(memory.getCharSequence(), memory.getStart(), memory.getCharSequence().length());
     }
 
@@ -1254,6 +1260,24 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
 
         private RichEditItalicSpan(int style) {
             super(style);
+        }
+    }
+
+    public class SelectionMemory {
+        private int start;
+        private int end;
+
+        public SelectionMemory(int start, int end){
+            this.start = start;
+            this.end = end;
+        }
+
+        public int getStart(){
+            return start;
+        }
+
+        public int getEnd(){
+            return end;
         }
     }
 
