@@ -60,8 +60,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Stack;
 
-import static android.R.id.text1;
-
 
 //TODO Undo/Redo
 //TODO Insert Image
@@ -284,6 +282,33 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         }
     }
 
+    /**
+     * Used to update button states whenever an undo action is performed.
+     */
+    protected void updateTextStylesOnUndoAction() {
+
+        /*
+         * Style Selection stack will always be pushed to twice whenever text is typed or deleted.
+         * Once when the text is typed (Character Stack)
+         * Again when a style is applied (Style Stack)
+         * To ensure that the selection saved during this time is only used once, this simple logic
+         * is applied:
+         * IF stack.size() IS NOT even
+         *      remove one element from the stack
+         * ELSE
+         *      continue operations normally
+         */
+        if (undoStackStyleSelection.size() % 2 == 1) {
+            undoStackStyleSelection.pop(); //gets rid of unnecessary element
+        } else {
+            SelectionMemory selectionMemory = undoStackStyleSelection.pop();
+            int start = selectionMemory.getStart();
+            int end = selectionMemory.getEnd();
+            setSelection(start, end);
+            updateTextStylesOnSelectionChange(start, end);
+        }
+    }
+
     protected boolean undoActionInProgress = false;
 
     /**
@@ -292,7 +317,8 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
         if (!undoActionInProgress) {
-            undoStackCharacter.push(new CharSequenceMemory(s.subSequence(start, start + count), start));
+            undoStackCharacter.push(new CharSequenceMemory(s.subSequence(start, start + count), start)); //Text replaced
+            undoStackStyleSelection.push(new SelectionMemory(getSelectionStart(), getSelectionEnd()));
         }
         undoActionInProgress = false;
     }
@@ -315,7 +341,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
             if (!undoActionInProgress && undoStackCharacter.size() % 2 == 1) {
                 //The stack size must always be odd, as the push in #beforeTextChanged must have gone off prior
                 //This check prevents the pushing to the stack when an undo is performed on an entire word.
-                undoStackCharacter.push(new CharSequenceMemory(s.subSequence(start, start + count), start));
+                undoStackCharacter.push(new CharSequenceMemory(s.subSequence(start, start + count), start)); //Text Entered
             }
             textChanged = false;
             return;
@@ -323,6 +349,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
 
         //If text being input is 0, then text is being deleted. Therefore, no text styles need to be applied
         if (count == 0) {
+            textChanged = true;
             return;
         }
 
@@ -368,8 +395,9 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         }
 
         //On loading, undoStackStyle will be null
-        if (undoStackStyle != null) {
+        if (textChanged && !undoActionInProgress) {
             undoStackStyle.push(Arrays.copyOf(styleMemories.toArray(), styleMemories.size(), StyleMemory[].class));
+            undoStackStyleSelection.push(new SelectionMemory(getSelectionStart(), getSelectionEnd()));
         }
 
         textChanged = true;
@@ -544,6 +572,8 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                 undoStackStyle.push(memory);
             }
         }
+
+        undoStackStyleSelection.push(new SelectionMemory(selStart, selEnd));
     }
 
     protected int findStartWordAtSelection() {
@@ -620,7 +650,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
             }
         }
         undoStackStyle.push(Arrays.copyOf(styleMemories.toArray(), styleMemories.size(), StyleMemory[].class));
-
+        undoStackStyleSelection.push(new SelectionMemory(start, end));
     }
 
     protected void fixUnderlineSpan() {
@@ -844,12 +874,11 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
             CharSequenceMemory textReplaced = undoStackCharacter.pop();
             undoActionInProgress = true;
             this.getEditableText().replace(textEntered.getStart(), textEntered.getStart() + textEntered.getCharSequence().length(), textReplaced.getCharSequence());
-            setSelection(textEntered.getStart(), textEntered.getStart()+ textEntered.getCharSequence().length());
         }
+
         if (undoStackStyle.size() > 0) {
             StyleMemory[] memories = undoStackStyle.pop();
-            int end = memories[memories.length - 1].getStart();
-            int start = memories[0].getStart();
+
             for (StyleMemory memory : memories) {
                 if (memory.wasApplied()) {
                     this.getEditableText().removeSpan(memory.getStyle());
@@ -857,9 +886,12 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
                     this.getEditableText().setSpan(memory.getStyle(), memory.getStart(), memory.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
             }
-            setSelection(start, end);
         }
-        //TODO update buttons to match their state
+
+        //Should always be true if either of the other two if statements executed
+        if (undoStackStyleSelection.size() > 0) {
+            updateTextStylesOnUndoAction();
+        }
     }
 
     public void redoAction() {
@@ -936,7 +968,7 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
-                TextView tv = (TextView) view.findViewById(text1);
+                TextView tv = (TextView) view.findViewById(android.R.id.text1);
 
                 int color = this.getItem(position).getColorCode();
                 tv.setBackgroundColor(color);
@@ -1267,16 +1299,16 @@ public class RichEditText extends AppCompatEditText implements TextWatcher, View
         private int start;
         private int end;
 
-        public SelectionMemory(int start, int end){
+        public SelectionMemory(int start, int end) {
             this.start = start;
             this.end = end;
         }
 
-        public int getStart(){
+        public int getStart() {
             return start;
         }
 
-        public int getEnd(){
+        public int getEnd() {
             return end;
         }
     }
